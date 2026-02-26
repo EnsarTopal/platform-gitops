@@ -7,6 +7,8 @@ spec:
   description: Platform managed by GitOps
   sourceRepos:
   - https://github.com/EnsarTopal/platform-gitops.git
+  - https://kubernetes.github.io/ingress-nginx
+  - https://metallb.github.io/metallb
   destinations:
   - namespace: "*"
     server: https://kubernetes.default.svc
