@@ -13,8 +13,19 @@ spec:
       labels:
         app: nginx
     spec:
+      volumes:
+      - name: html
+        configMap:
+          name: nginx-html
+          items:
+          - key: index.html
+            path: index.html
       containers:
       - name: nginx
         image: nginx:1.25
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html/index.html
+          subPath: index.html
