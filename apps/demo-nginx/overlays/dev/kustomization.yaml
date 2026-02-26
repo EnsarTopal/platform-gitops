@@ -1,0 +1,11 @@
+resources:
+  - ../../base
+nameSuffix: -dev
+patches:
+  - target:
+      kind: Ingress
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: demo-nginx-dev.lab.local
