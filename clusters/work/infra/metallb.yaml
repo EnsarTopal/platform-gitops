@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-metallb
+  namespace: argocd
+spec:
+  project: platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: metallb-system
+  source:
+    chart: metallb
+    repoURL: https://metallb.github.io/metallb
+    targetRevision: 0.14.9
+    helm:
+      releaseName: metallb
+      values: |
+        speaker:
+          # homelab'de L2 kullanıyoruz
+          frr:
+            enabled: false
+        # AddressPool ve L2Advertisement'ı Helm values ile CR olarak basıyoruz
+        crds:
+          enabled: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
