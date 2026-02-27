@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-rollouts
+  namespace: argocd
+spec:
+  project: platform
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-rollouts
+    targetRevision: 2.38.0
+    helm:
+      releaseName: rollouts
+      values: |
+        dashboard:
+          enabled: true
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            hosts:
+              - rollouts.lab.local
+            paths:
+              - /
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-rollouts
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,4 +1,5 @@
 resources:
+  - rollouts.yaml
   - loki.yaml
   - promtail.yaml
   - ingress-nginx.yaml
