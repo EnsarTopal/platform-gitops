@@ -1,2 +1,3 @@
 resources:
   - demo-nginx-app.yaml
+  - demo-nginx-prod-app.yaml
