@@ -9,3 +9,15 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: demo-nginx-prod.lab.local
+
+patches:
+  - target:
+      kind: Deployment
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+images:
+  - name: nginx
+    newTag: "1.25.5"
