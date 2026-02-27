@@ -10,3 +10,4 @@ resources:
   - cert-manager-config.yaml
   - external-secrets.yaml
   - external-secrets-config.yaml
+  - longhorn.yaml
