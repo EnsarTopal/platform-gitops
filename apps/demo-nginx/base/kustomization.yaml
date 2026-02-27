@@ -1,6 +1,8 @@
 resources:
   - namespace.yaml
-  - deployment.yaml
+  - rollout.yaml
   - service.yaml
+  - service-canary.yaml
   - ingress.yaml
   - configmap.yaml
+  - analysis-template.yaml

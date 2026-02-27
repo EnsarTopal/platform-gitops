@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: nginx
   namespace: demo
@@ -29,3 +29,19 @@ spec:
         - name: html
           mountPath: /usr/share/nginx/html/index.html
           subPath: index.html
+  strategy:
+    canary:
+      canaryService: nginx-canary
+      stableService: nginx
+      trafficRouting:
+        nginx:
+          stableIngress: nginx
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - analysis:
+          templates:
+          - templateName: nginx-error-rate
+      - setWeight: 50
+      - pause: {duration: 30s}
+      - setWeight: 100
