@@ -1,3 +1,2 @@
 resources:
-  - demo-nginx-app.yaml
   - demo-nginx-dev-app.yaml
