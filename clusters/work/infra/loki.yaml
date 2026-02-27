@@ -11,6 +11,9 @@ spec:
     targetRevision: 6.16.0
     helm:
       releaseName: loki
+        parameters:
+          - name: loki.useTestSchema
+            value: "true"
       values: |
         deploymentMode: SingleBinary
 
