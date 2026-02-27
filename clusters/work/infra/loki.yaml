@@ -16,7 +16,6 @@ spec:
           auth_enabled: false
 
         # Single-binary (homelab için kolay)
-        deploymentMode: SingleBinary
 
         singleBinary:
           replicas: 1
