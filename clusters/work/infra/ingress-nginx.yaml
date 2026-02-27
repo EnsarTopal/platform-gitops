@@ -20,6 +20,13 @@ spec:
             type: LoadBalancer
           admissionWebhooks:
             enabled: true
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              namespace: monitoring
+              additionalLabels:
+                release: monitoring
   syncPolicy:
     automated:
       prune: true
