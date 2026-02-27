@@ -17,8 +17,14 @@ spec:
           ingress:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: lab-ca-issuer
             hosts:
               - rollouts.lab.local
+            tls:
+              - secretName: rollouts-tls
+                hosts:
+                  - rollouts.lab.local
             paths:
               - /
   destination:

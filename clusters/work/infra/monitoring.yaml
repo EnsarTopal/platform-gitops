@@ -17,8 +17,14 @@ spec:
           ingress:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: lab-ca-issuer
             hosts:
               - grafana.lab.local
+            tls:
+              - secretName: grafana-tls
+                hosts:
+                  - grafana.lab.local
             path: /
             pathType: Prefix
           additionalDataSources:
@@ -31,8 +37,14 @@ spec:
           ingress:
             enabled: true
             ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: lab-ca-issuer
             hosts:
               - prometheus.lab.local
+            tls:
+              - secretName: prometheus-tls
+                hosts:
+                  - prometheus.lab.local
             paths:
               - /
   destination:
