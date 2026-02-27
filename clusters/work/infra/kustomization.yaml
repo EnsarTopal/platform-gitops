@@ -7,4 +7,4 @@ resources:
   - config/metallb-config.yaml
   - monitoring.yaml
   - cert-manager.yaml
-  - config/cert-manager-issuer.yaml
+  - cert-manager-config.yaml
