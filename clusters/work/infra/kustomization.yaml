@@ -1,4 +1,6 @@
 resources:
-  - metallb.yaml
-  - ingress-nginx.yaml
   - config
+  - ingress-nginx.yaml
+  - metallb.yaml
+  - metallb-config.yaml
+  - monitoring.yaml
