@@ -10,10 +10,7 @@ spec:
     chart: loki
     targetRevision: 6.16.0
     helm:
-      releaseName: loki
-        parameters:
-          - name: loki.useTestSchema
-            value: "true"
+        releaseName: loki
       values: |
         deploymentMode: SingleBinary
 
@@ -25,7 +22,6 @@ spec:
             type: filesystem
 
         # chart validate icin (helm --set loki.useTestSchema=true)
-        lokiUseTestSchema: true
 
         singleBinary:
           replicas: 1
