@@ -12,43 +12,28 @@ spec:
     helm:
       releaseName: loki
       values: |
-        loki:
-          auth_enabled: false
-
         deploymentMode: SingleBinary
 
-        singleBinary:
-          replicas: 1
-
-        # SimpleScalable bileşenlerini kapatıyoruz (çakışmayı önler)
-        read:
-          replicas: 0
-        write:
-          replicas: 0
-        backend:
-          replicas: 0
-
-        # simple scalable tarafını kapatıyoruz
-        read:
-          replicas: 0
-        write:
-          replicas: 0
-        backend:
-          replicas: 0
-
-        # Single-binary (homelab için kolay)
+        loki:
+          auth_enabled: false
+          useTestSchema: true
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: filesystem
 
         singleBinary:
           replicas: 1
           persistence:
             enabled: false
 
-        # dev/test için memory storage (PVC yok)
-        loki:
-          commonConfig:
-            replication_factor: 1
-          storage:
-            type: filesystem
+        # SimpleScalable kapalı (çakışma olmasın)
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
 
         gateway:
           enabled: true
