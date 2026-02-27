@@ -1,7 +1,7 @@
 resources:
   - ../../base
 
-nameSuffix: -prod
+nameSuffix: -dev
 
 patches:
   - target:
@@ -10,7 +10,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/rules/0/host
-        value: demo-nginx.lab.local
+        value: demo-nginx-dev.lab.local
 
   - target:
       kind: Deployment
