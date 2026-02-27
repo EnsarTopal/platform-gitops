@@ -20,6 +20,14 @@ spec:
         singleBinary:
           replicas: 1
 
+        # SimpleScalable bileşenlerini kapatıyoruz (çakışmayı önler)
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+
         # simple scalable tarafını kapatıyoruz
         read:
           replicas: 0
