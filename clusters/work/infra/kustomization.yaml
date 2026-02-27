@@ -9,3 +9,4 @@ resources:
   - cert-manager.yaml
   - cert-manager-config.yaml
   - external-secrets.yaml
+  - external-secrets-config.yaml
