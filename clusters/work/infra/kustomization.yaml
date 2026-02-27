@@ -1,5 +1,5 @@
 resources:
   - ingress-nginx.yaml
   - metallb.yaml
-  - metallb-config.yaml
+  - config/metallb-config.yaml
   - monitoring.yaml
