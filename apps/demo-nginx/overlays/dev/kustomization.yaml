@@ -1,8 +1,6 @@
 resources:
   - ../../base
-
 nameSuffix: -dev
-
 patches:
   - target:
       kind: Ingress
@@ -11,11 +9,11 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: demo-nginx-dev.lab.local
-
   - target:
-      kind: Deployment
+      kind: Rollout
       name: nginx
     patch: |-
       - op: replace
         path: /spec/replicas
         value: 2
+  - path: image-patch.yaml
