@@ -1,4 +1,6 @@
 resources:
+  - loki.yaml
+  - promtail.yaml
   - ingress-nginx.yaml
   - metallb.yaml
   - config/metallb-config.yaml
