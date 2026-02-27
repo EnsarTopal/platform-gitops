@@ -16,7 +16,6 @@ spec:
 
         loki:
           auth_enabled: false
-          path_prefix: /tmp/loki
           commonConfig:
             replication_factor: 1
           storage:
@@ -35,6 +34,12 @@ spec:
           replicas: 1
           persistence:
             enabled: false
+          extraVolumes:
+            - name: loki-data
+              emptyDir: {}
+          extraVolumeMounts:
+            - name: loki-data
+              mountPath: /var/loki
 
         read:
           replicas: 0
