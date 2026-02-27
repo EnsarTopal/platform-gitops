@@ -1,0 +1,11 @@
+resources:
+  - ../../base
+nameSuffix: -prod
+patches:
+  - target:
+      kind: Ingress
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: demo-nginx-prod.lab.local
