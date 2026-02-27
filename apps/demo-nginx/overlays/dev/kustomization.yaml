@@ -28,3 +28,6 @@ patches:
       - op: replace
         path: /spec/strategy/canary/steps/2/analysis/templates/0/templateName
         value: nginx-error-rate-dev
+      - op: replace
+        path: /spec/template/spec/volumes/0/configMap/name
+        value: nginx-html-dev
