@@ -14,6 +14,10 @@ spec:
       parameters:
         - name: loki.useTestSchema
           value: "true"
+        - name: ingress.enabled
+          value: "false"
+        - name: gateway.ingress.enabled
+          value: "false"
       values: |
         deploymentMode: SingleBinary
 
@@ -40,13 +44,3 @@ spec:
           enabled: true
           service:
             type: ClusterIP
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: monitoring
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
