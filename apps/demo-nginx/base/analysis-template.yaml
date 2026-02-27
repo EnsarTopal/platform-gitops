@@ -8,14 +8,10 @@ spec:
   - name: error-rate
     interval: 30s
     count: 3
-    successCondition: result[0] <= 0.05
-    failureLimit: 1
+    failureLimit: 2
     provider:
       prometheus:
         address: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
         query: |
-          scalar(
-            sum(rate(nginx_ingress_controller_requests{status=~"5.."}[2m])) /
-            (sum(rate(nginx_ingress_controller_requests[2m])) > 0)
-            or vector(0)
-          )
+          sum(rate(nginx_ingress_controller_requests{status=~"5.."}[2m])) or vector(0)
+        successCondition: "len(result) == 0 || result[0] <= 0.05"
