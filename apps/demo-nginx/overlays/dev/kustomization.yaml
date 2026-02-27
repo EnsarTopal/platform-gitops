@@ -16,4 +16,5 @@ patches:
       - op: replace
         path: /spec/replicas
         value: 2
+  - path: rollout-patch.yaml
   - path: image-patch.yaml

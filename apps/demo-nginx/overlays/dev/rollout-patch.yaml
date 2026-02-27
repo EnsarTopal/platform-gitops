@@ -1,0 +1,12 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: nginx
+spec:
+  strategy:
+    canary:
+      canaryService: nginx-canary-dev
+      stableService: nginx-dev
+      trafficRouting:
+        nginx:
+          stableIngress: nginx-dev
