@@ -16,12 +16,11 @@ spec:
 
         loki:
           auth_enabled: false
+          path_prefix: /tmp/loki
           commonConfig:
             replication_factor: 1
-            path_prefix: /tmp/loki
           storage:
             type: filesystem
-          useTestSchema: true
           schemaConfig:
             configs:
               - from: "2024-01-01"
