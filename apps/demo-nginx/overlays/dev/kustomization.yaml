@@ -16,5 +16,12 @@ patches:
       - op: replace
         path: /spec/replicas
         value: 2
-  - path: rollout-patch.yaml
-  - path: image-patch.yaml
+      - op: replace
+        path: /spec/strategy/canary/stableService
+        value: nginx-dev
+      - op: replace
+        path: /spec/strategy/canary/canaryService
+        value: nginx-canary-dev
+      - op: replace
+        path: /spec/strategy/canary/trafficRouting/nginx/stableIngress
+        value: nginx-dev
