@@ -1,3 +1,4 @@
 resources:
   - cluster-secret-store.yaml
   - grafana-secret.yaml
+  - alertmanager-secret.yaml

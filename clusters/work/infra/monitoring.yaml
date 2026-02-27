@@ -50,6 +50,76 @@ spec:
                   - prometheus.lab.local
             paths:
               - /
+        alertmanager:
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: lab-ca-issuer
+            hosts:
+              - alertmanager.lab.local
+            tls:
+              - secretName: alertmanager-tls
+                hosts:
+                  - alertmanager.lab.local
+            paths:
+              - /
+          alertmanagerSpec:
+            useExistingSecret: true
+            configSecret: alertmanager-config
+        additionalPrometheusRulesMap:
+          platform-rules:
+            groups:
+            - name: platform.rules
+              rules:
+              - alert: PodCrashLooping
+                expr: rate(kube_pod_container_status_restarts_total[15m]) * 60 * 5 > 0
+                for: 5m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "Pod crash looping: {{ $labels.pod }}"
+                  description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+              - alert: NodeDown
+                expr: up{job="node-exporter"} == 0
+                for: 2m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "Node down: {{ $labels.instance }}"
+                  description: "Node {{ $labels.instance }} is unreachable"
+              - alert: HighCPUUsage
+                expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+                for: 10m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "High CPU: {{ $labels.instance }}"
+                  description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+              - alert: HighMemoryUsage
+                expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+                for: 10m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "High Memory: {{ $labels.instance }}"
+                  description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+              - alert: DiskSpaceLow
+                expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 80
+                for: 5m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Low disk space: {{ $labels.instance }}"
+                  description: "Disk usage is {{ $value }}% on {{ $labels.mountpoint }}"
+              - alert: DeploymentFailed
+                expr: kube_deployment_status_replicas_unavailable > 0
+                for: 5m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "Deployment failed: {{ $labels.deployment }}"
+                  description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
