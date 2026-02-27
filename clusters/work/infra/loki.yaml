@@ -44,10 +44,9 @@ spec:
           enabled: true
           ingressClassName: nginx
           hosts:
-            - host: loki.lab.local
-              paths:
-                - path: /
-                  pathType: Prefix
+            - loki.lab.local
+          paths:
+            - /
       parameters:
         - name: loki.useTestSchema
           value: "true"
