@@ -11,7 +11,7 @@ spec:
     targetRevision: 56.6.2
     helm:
       releaseName: monitoring
-      values: |-
+      values: |
         grafana:
           adminPassword: "admin123"
           ingress:
@@ -21,7 +21,6 @@ spec:
               - grafana.lab.local
             path: /
             pathType: Prefix
-
         prometheus:
           ingress:
             enabled: true
@@ -39,3 +38,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
