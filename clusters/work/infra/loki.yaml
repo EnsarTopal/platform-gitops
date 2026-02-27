@@ -10,7 +10,10 @@ spec:
     chart: loki
     targetRevision: 6.16.0
     helm:
-        releaseName: loki
+      releaseName: loki
+      parameters:
+        - name: loki.useTestSchema
+          value: "true"
       values: |
         deploymentMode: SingleBinary
 
@@ -20,8 +23,6 @@ spec:
             replication_factor: 1
           storage:
             type: filesystem
-
-        # chart validate icin (helm --set loki.useTestSchema=true)
 
         singleBinary:
           replicas: 1
@@ -39,17 +40,6 @@ spec:
           enabled: true
           service:
             type: ClusterIP
-
-        ingress:
-          enabled: false
-          ingressClassName: nginx
-          hosts:
-            - loki.lab.local
-          paths:
-            - /
-      parameters:
-        - name: loki.useTestSchema
-          value: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
