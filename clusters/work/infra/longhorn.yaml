@@ -12,6 +12,8 @@ spec:
     helm:
       releaseName: longhorn
       values: |
+        preUpgradeChecker:
+          jobEnabled: false
         defaultSettings:
           defaultReplicaCount: 2
           storageMinimalAvailablePercentage: 15
