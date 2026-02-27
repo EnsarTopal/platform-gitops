@@ -67,6 +67,8 @@ spec:
           alertmanagerSpec:
             useExistingSecret: true
             configSecret: alertmanager-config
+            secrets:
+              - alertmanager-telegram-credentials
         additionalPrometheusRulesMap:
           platform-rules:
             groups:
