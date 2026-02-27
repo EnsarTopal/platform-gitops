@@ -16,18 +16,19 @@ spec:
 
         loki:
           auth_enabled: false
-          useTestSchema: true
           commonConfig:
             replication_factor: 1
           storage:
             type: filesystem
+
+        # chart validate icin (helm --set loki.useTestSchema=true)
+        lokiUseTestSchema: true
 
         singleBinary:
           replicas: 1
           persistence:
             enabled: false
 
-        # SimpleScalable kapalı (çakışma olmasın)
         read:
           replicas: 0
         write:
