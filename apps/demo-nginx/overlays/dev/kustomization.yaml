@@ -25,3 +25,6 @@ patches:
       - op: replace
         path: /spec/strategy/canary/trafficRouting/nginx/stableIngress
         value: nginx-dev
+      - op: replace
+        path: /spec/strategy/canary/steps/2/analysis/templates/0/templateName
+        value: nginx-error-rate-dev
