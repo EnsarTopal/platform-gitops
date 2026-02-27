@@ -49,6 +49,9 @@ spec:
               paths:
                 - path: /
                   pathType: Prefix
+      parameters:
+        - name: loki.useTestSchema
+          value: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
