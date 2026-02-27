@@ -33,8 +33,13 @@ spec:
         singleBinary:
           replicas: 1
           persistence:
-            enabled: true
-            size: 5Gi
+            enabled: false
+          extraVolumes:
+            - name: loki-data
+              emptyDir: {}
+          extraVolumeMounts:
+            - name: loki-data
+              mountPath: /var/loki
 
         read:
           replicas: 0
