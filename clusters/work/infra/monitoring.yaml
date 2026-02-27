@@ -13,21 +13,20 @@ spec:
       releaseName: monitoring
       values: |
         grafana:
-  adminPassword: "admin123"
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    hosts:
-      - grafana.lab.local
-    path: /
-    pathType: Prefix
-  additionalDataSources:
-    - name: Loki
-      type: loki
-      url: http://loki:3100
-      access: proxy
-      isDefault: false
-
+          adminPassword: "admin123"
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            hosts:
+              - grafana.lab.local
+            path: /
+            pathType: Prefix
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              url: http://loki:3100
+              access: proxy
+              isDefault: false
         prometheus:
           ingress:
             enabled: true
