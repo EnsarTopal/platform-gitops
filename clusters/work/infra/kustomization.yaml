@@ -8,3 +8,4 @@ resources:
   - monitoring.yaml
   - cert-manager.yaml
   - cert-manager-config.yaml
+  - external-secrets.yaml
