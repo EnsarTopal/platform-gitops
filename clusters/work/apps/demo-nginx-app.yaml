@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: demo-nginx-prod
+  name: demo-nginx-dev
   namespace: argocd
 spec:
   project: platform
   source:
     repoURL: https://github.com/EnsarTopal/platform-gitops.git
     targetRevision: HEAD
-    path: apps/demo-nginx/overlays/prod
+    path: apps/demo-nginx/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: demo
