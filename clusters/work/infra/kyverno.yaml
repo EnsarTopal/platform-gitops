@@ -14,24 +14,19 @@ spec:
       values: |
         crds:
           install: true
-        cleanupJobs:
-          admissionReports:
-            enabled: false
-          clusterAdmissionReports:
-            enabled: false
-          ephemeralReports:
-            enabled: false
-          clusterEphemeralReports:
-            enabled: false
-          updateRequests:
-            enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
+  ignoreDifferences:
+    - group: batch
+      kind: CronJob
+      namespace: kyverno
+      jsonPointers:
+        - /spec
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: false
+      selfHeal: false
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
