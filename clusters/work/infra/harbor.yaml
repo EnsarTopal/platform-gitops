@@ -11,19 +11,24 @@ spec:
     targetRevision: 1.14.2
     helm:
       releaseName: infra-harbor
-      valueFiles:
-        - $values/clusters/work/infra/harbor-values.yaml
-  sources:
-    - repoURL: https://helm.goharbor.io
-      chart: harbor
-      targetRevision: 1.14.2
-      helm:
-        releaseName: infra-harbor
-        valueFiles:
-          - $values/clusters/work/infra/harbor-values.yaml
-    - repoURL: https://github.com/EnsarTopal/platform-gitops.git
-      targetRevision: HEAD
-      ref: values
+      values: |
+        expose:
+          type: ingress
+          tls:
+            enabled: true
+            certSource: auto
+            auto:
+              commonName: harbor.lab.local
+          ingress:
+            hosts:
+              core: harbor.lab.local
+            annotations:
+              kubernetes.io/ingress.class: nginx
+              cert-manager.io/cluster-issuer: lab-ca-issuer
+              nginx.ingress.kubernetes.io/ssl-redirect: "true"
+              nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+        externalURL: https://harbor.lab.local
   destination:
     server: https://kubernetes.default.svc
     namespace: harbor
