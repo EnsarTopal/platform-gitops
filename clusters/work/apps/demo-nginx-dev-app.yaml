@@ -12,6 +12,11 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: demo
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: AnalysisTemplate
+      jsonPointers:
+        - /spec/metrics/0/successCondition
   syncPolicy:
     automated:
       prune: true
