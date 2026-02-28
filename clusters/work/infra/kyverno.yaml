@@ -14,6 +14,27 @@ spec:
       values: |
         crds:
           install: true
+        cleanupJobs:
+          cleanupUpdateRequests:
+            image:
+              repository: harbor.lab.local/infra/kubectl
+              tag: "1.28.5"
+          cleanupAdmissionReports:
+            image:
+              repository: harbor.lab.local/infra/kubectl
+              tag: "1.28.5"
+          cleanupClusterAdmissionReports:
+            image:
+              repository: harbor.lab.local/infra/kubectl
+              tag: "1.28.5"
+          cleanupEphemeralReports:
+            image:
+              repository: harbor.lab.local/infra/kubectl
+              tag: "1.28.5"
+          cleanupClusterEphemeralReports:
+            image:
+              repository: harbor.lab.local/infra/kubectl
+              tag: "1.28.5"
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
