@@ -28,6 +28,7 @@ spec:
               nginx.ingress.kubernetes.io/ssl-redirect: "true"
               nginx.ingress.kubernetes.io/proxy-body-size: "0"
         externalURL: https://harbor.lab.local
+        caSecretName: ""
         persistence:
           persistentVolumeClaim:
             registry:
