@@ -11,26 +11,19 @@ spec:
     targetRevision: 1.14.2
     helm:
       releaseName: infra-harbor
-      values: |
-        expose:
-          type: nodePort
-          tls:
-            enabled: true
-          nodePort:
-            ports:
-              http:
-                port: 80
-                nodePort: 30080
-              https:
-                port: 443
-                nodePort: 30443
-
-        # Ingress kapansın (nodePort kullanacağız)
-        ingress:
-          enabled: false
-
-        # Harbor external URL (UI için düzgün link üretir)
-        externalURL: https://harbor.lab.local:30443
+      valueFiles:
+        - $values/clusters/work/infra/harbor-values.yaml
+  sources:
+    - repoURL: https://helm.goharbor.io
+      chart: harbor
+      targetRevision: 1.14.2
+      helm:
+        releaseName: infra-harbor
+        valueFiles:
+          - $values/clusters/work/infra/harbor-values.yaml
+    - repoURL: https://github.com/EnsarTopal/platform-gitops.git
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: harbor

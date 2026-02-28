@@ -1,0 +1,17 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    certSource: auto
+    auto:
+      commonName: harbor.lab.local
+  ingress:
+    hosts:
+      core: harbor.lab.local
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: lab-ca-issuer
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+externalURL: https://harbor.lab.local
