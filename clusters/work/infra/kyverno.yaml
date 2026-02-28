@@ -16,30 +16,15 @@ spec:
           install: true
         cleanupJobs:
           admissionReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: v1.28.5
+            enabled: false
           clusterAdmissionReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: v1.28.5
+            enabled: false
           ephemeralReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: v1.28.5
+            enabled: false
           clusterEphemeralReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: v1.28.5
+            enabled: false
           updateRequests:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: v1.28.5
+            enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
