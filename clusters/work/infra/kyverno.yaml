@@ -19,26 +19,6 @@ spec:
             registry: registry.k8s.io
             repository: kubectl
             tag: "v1.28.5"
-          cleanupUpdateRequests:
-            image:
-              repository: harbor.lab.local/infra/kubectl
-              tag: "1.28.5"
-          cleanupAdmissionReports:
-            image:
-              repository: harbor.lab.local/infra/kubectl
-              tag: "1.28.5"
-          cleanupClusterAdmissionReports:
-            image:
-              repository: harbor.lab.local/infra/kubectl
-              tag: "1.28.5"
-          cleanupEphemeralReports:
-            image:
-              repository: harbor.lab.local/infra/kubectl
-              tag: "1.28.5"
-          cleanupClusterEphemeralReports:
-            image:
-              repository: harbor.lab.local/infra/kubectl
-              tag: "1.28.5"
         hooks:
           image:
             registry: registry.k8s.io
