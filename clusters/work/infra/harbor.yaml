@@ -29,6 +29,8 @@ spec:
               nginx.ingress.kubernetes.io/proxy-body-size: "0"
         externalURL: https://harbor.lab.local
         caSecretName: ""
+        updateStrategy:
+          type: Recreate
         core:
           containerSecurityContext:
             runAsNonRoot: true
