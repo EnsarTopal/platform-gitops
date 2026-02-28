@@ -17,7 +17,7 @@ spec:
 
         kubectlImage:
           registry: registry.k8s.io
-          repository: kubectl
+          repository: kubectl/kubectl
           tag: "v1.28.5"
 
         # Post-upgrade hook job "kyverno-clean-reports" image override (IMPORTANT)
