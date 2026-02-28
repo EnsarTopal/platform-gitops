@@ -5,6 +5,7 @@ metadata:
   namespace: argocd
 spec:
   project: platform
+
   source:
     repoURL: https://kyverno.github.io/kyverno
     chart: kyverno
@@ -12,106 +13,141 @@ spec:
     helm:
       releaseName: kyverno
       values: |
-
-          # Force kubectl image for all Kyverno cleanup hooks/jobs
-
-          cleanupWebhooks:
-
-            image:
-
-              registry: registry.k8s.io
-
-              repository: kubectl
-
-              tag: "v1.28.5"
-          policyReportsCleanup:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl
-              tag: "v1.28.5"
-
-          cleanupPolicyReports:
-
-            image:
-
-              registry: registry.k8s.io
-
-              repository: kubectl
-
-              tag: "v1.28.5"
-
-          cleanupJobs:
-
-            admissionReports:
-
-              image:
-
-                registry: registry.k8s.io
-
-                repository: kubectl
-
-                tag: "v1.28.5"
-
-            clusterAdmissionReports:
-
-              image:
-
-                registry: registry.k8s.io
-
-                repository: kubectl
-
-                tag: "v1.28.5"
-
-            ephemeralReports:
-
-              image:
-
-                registry: registry.k8s.io
-
-                repository: kubectl
-
-                tag: "v1.28.5"
-
-            clusterEphemeralReports:
-
-              image:
-
-                registry: registry.k8s.io
-
-                repository: kubectl
-
-                tag: "v1.28.5"
-
-            updateRequests:
-
-              image:
-
-                registry: registry.k8s.io
-
-                repository: kubectl
-
-                tag: "v1.28.5"
-
         crds:
           install: true
+
+        # --- Helm hook jobs (important ones) ---
+        # pre-delete webhook cleanup hook image
+        cleanupWebhooks:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            tag: "v1.28.5"
+
+        # post-upgrade "clean reports" hook job image (creates Job: kyverno-clean-reports)
+        policyReportsCleanup:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            tag: "v1.28.5"
+
+        # (optional, but keeps consistency for the other hook defined by the chart)
+        cleanupPolicyReports:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            tag: "v1.28.5"
+
+        # --- Cleanup CronJobs images ---
         cleanupJobs:
-          image:
-            registry: registry.k8s.io
-            repository: kubectl
-            tag: "v1.28.5"
-        hooks:
-          image:
-            registry: registry.k8s.io
-            repository: kubectl
-            tag: "v1.28.5"
-          policyReportsCleanup:
+          admissionReports:
             image:
               registry: registry.k8s.io
               repository: kubectl
               tag: "v1.28.5"
+          clusterAdmissionReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          ephemeralReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          clusterEphemeralReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          updateRequests:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=trueapiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-kyverno
+  namespace: argocd
+spec:
+  project: platform
+
+  source:
+    repoURL: https://kyverno.github.io/kyverno
+    chart: kyverno
+    targetRevision: 3.2.6
+    helm:
+      releaseName: kyverno
+      values: |
+        crds:
+          install: true
+
+        # --- Helm hook jobs (important ones) ---
+        # pre-delete webhook cleanup hook image
+        cleanupWebhooks:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            tag: "v1.28.5"
+
+        # post-upgrade "clean reports" hook job image (creates Job: kyverno-clean-reports)
+        policyReportsCleanup:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            tag: "v1.28.5"
+
+        # (optional, but keeps consistency for the other hook defined by the chart)
+        cleanupPolicyReports:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            tag: "v1.28.5"
+
+        # --- Cleanup CronJobs images ---
+        cleanupJobs:
+          admissionReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          clusterAdmissionReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          ephemeralReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          clusterEphemeralReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+          updateRequests:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl
+              tag: "v1.28.5"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kyverno
+
   syncPolicy:
     automated:
       prune: true
