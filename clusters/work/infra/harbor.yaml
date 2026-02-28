@@ -27,7 +27,6 @@ spec:
               cert-manager.io/cluster-issuer: lab-ca-issuer
               nginx.ingress.kubernetes.io/ssl-redirect: "true"
               nginx.ingress.kubernetes.io/proxy-body-size: "0"
-
         externalURL: https://harbor.lab.local
   destination:
     server: https://kubernetes.default.svc
@@ -38,4 +37,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
