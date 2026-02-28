@@ -11,3 +11,4 @@ resources:
   - external-secrets.yaml
   - external-secrets-config.yaml
   - longhorn.yaml
+  - harbor.yaml

@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-harbor
+  namespace: argocd
+spec:
+  project: platform
+  source:
+    repoURL: https://helm.goharbor.io
+    chart: harbor
+    targetRevision: 1.14.2
+    helm:
+      releaseName: infra-harbor
+      values: |
+        expose:
+          type: ingress
+          tls:
+            enabled: true
+            certSource: secret
+            secret:
+              secretName: harbor-tls
+          ingress:
+            className: nginx
+            hosts:
+              core: harbor.lab.local
+            annotations:
+              cert-manager.io/cluster-issuer: lab-ca-issuer
+        externalURL: https://harbor.lab.local
+        harborAdminPassword: "CHANGEME_STRONG"
+        persistence:
+          enabled: true
+          storageClass: longhorn
+          registry:
+            size: 20Gi
+          chartmuseum:
+            size: 5Gi
+          jobservice:
+            jobLog:
+              size: 1Gi
+          database:
+            size: 10Gi
+          redis:
+            size: 5Gi
+          trivy:
+            size: 10Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
