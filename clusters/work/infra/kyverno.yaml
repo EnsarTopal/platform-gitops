@@ -15,6 +15,34 @@ spec:
         crds:
           install: true
 
+
+        cleanupJobs:
+          admissionReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl/kubectl
+              tag: "v1.28.5"
+          clusterAdmissionReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl/kubectl
+              tag: "v1.28.5"
+          ephemeralReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl/kubectl
+              tag: "v1.28.5"
+          clusterEphemeralReports:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl/kubectl
+              tag: "v1.28.5"
+          updateRequests:
+            image:
+              registry: registry.k8s.io
+              repository: kubectl/kubectl
+              tag: "v1.28.5"
+
         kubectlImage:
           registry: registry.k8s.io
           repository: kubectl/kubectl
@@ -42,32 +70,6 @@ spec:
             tag: "v1.28.5"
 
         # Scheduled cleanup CronJobs image overrides
-        cleanupJobs:
-          admissionReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: "v1.28.5"
-          clusterAdmissionReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: "v1.28.5"
-          ephemeralReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: "v1.28.5"
-          clusterEphemeralReports:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: "v1.28.5"
-          updateRequests:
-            image:
-              registry: registry.k8s.io
-              repository: kubectl/kubectl
-              tag: "v1.28.5"
 
   destination:
     server: https://kubernetes.default.svc
