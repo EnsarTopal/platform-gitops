@@ -46,6 +46,11 @@ spec:
             trivy:
               storageClass: "longhorn"
               size: 5Gi
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/volumeClaimTemplates
   destination:
     server: https://kubernetes.default.svc
     namespace: harbor
