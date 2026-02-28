@@ -24,21 +24,21 @@ spec:
         policyReportsCleanup:
           image:
             registry: registry.k8s.io
-            repository: kubectl
+            repository: kubectl/kubectl
             tag: "v1.28.5"
 
         # Webhook cleanup job image override (chart param name is webhooksCleanup)
         webhooksCleanup:
           image:
             registry: registry.k8s.io
-            repository: kubectl
+            repository: kubectl/kubectl
             tag: "v1.28.5"
 
         # Other helm hooks (migrate-resources etc.) use hooks.image
         hooks:
           image:
             registry: registry.k8s.io
-            repository: kubectl
+            repository: kubectl/kubectl
             tag: "v1.28.5"
 
         # Scheduled cleanup CronJobs image overrides
@@ -46,27 +46,27 @@ spec:
           admissionReports:
             image:
               registry: registry.k8s.io
-              repository: kubectl
+              repository: kubectl/kubectl
               tag: "v1.28.5"
           clusterAdmissionReports:
             image:
               registry: registry.k8s.io
-              repository: kubectl
+              repository: kubectl/kubectl
               tag: "v1.28.5"
           ephemeralReports:
             image:
               registry: registry.k8s.io
-              repository: kubectl
+              repository: kubectl/kubectl
               tag: "v1.28.5"
           clusterEphemeralReports:
             image:
               registry: registry.k8s.io
-              repository: kubectl
+              repository: kubectl/kubectl
               tag: "v1.28.5"
           updateRequests:
             image:
               registry: registry.k8s.io
-              repository: kubectl
+              repository: kubectl/kubectl
               tag: "v1.28.5"
 
   destination:
