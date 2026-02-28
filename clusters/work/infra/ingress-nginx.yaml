@@ -11,11 +11,18 @@ spec:
   source:
     chart: ingress-nginx
     repoURL: https://kubernetes.github.io/ingress-nginx
-    targetRevision: 4.10.1
+    targetRevision: 4.14.3
     helm:
       releaseName: ingress
       values: |
         controller:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           service:
             type: LoadBalancer
           admissionWebhooks:
