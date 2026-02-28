@@ -12,3 +12,5 @@ resources:
   - external-secrets-config.yaml
   - longhorn.yaml
   - harbor.yaml
+  - kyverno.yaml
+  - kyverno-config.yaml

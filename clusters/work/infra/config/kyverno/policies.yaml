@@ -1,0 +1,162 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-namespace-labels
+  annotations:
+    policies.kyverno.io/title: Require Namespace Labels
+    policies.kyverno.io/description: Namespaces must have 'env' and 'team' labels.
+spec:
+  validationFailureAction: Audit
+  rules:
+  - name: check-namespace-labels
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+    validate:
+      message: "Namespace must have 'env' and 'team' labels."
+      pattern:
+        metadata:
+          labels:
+            env: "?*"
+            team: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-resource-limits
+  annotations:
+    policies.kyverno.io/title: Require Resource Limits
+    policies.kyverno.io/description: Containers must have CPU and memory limits.
+spec:
+  validationFailureAction: Audit
+  rules:
+  - name: check-resource-limits
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kyverno
+          - longhorn-system
+          - cert-manager
+    validate:
+      message: "CPU and memory limits are required."
+      pattern:
+        spec:
+          containers:
+          - resources:
+              limits:
+                cpu: "?*"
+                memory: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+  annotations:
+    policies.kyverno.io/title: Disallow Latest Tag
+    policies.kyverno.io/description: Image tag 'latest' is not allowed.
+spec:
+  validationFailureAction: Audit
+  rules:
+  - name: check-image-tag
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kyverno
+    validate:
+      message: "Image tag 'latest' is not allowed. Use a specific version."
+      foreach:
+      - list: "request.object.spec.containers"
+        deny:
+          conditions:
+            any:
+            - key: "{{ element.image }}"
+              operator: Equals
+              value: "*:latest"
+            - key: "{{ element.image }}"
+              operator: NotContains
+              value: ":"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+  annotations:
+    policies.kyverno.io/title: Disallow Privileged Containers
+    policies.kyverno.io/description: Privileged containers are not allowed.
+spec:
+  validationFailureAction: Audit
+  rules:
+  - name: check-privileged
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kyverno
+          - longhorn-system
+    validate:
+      message: "Privileged containers are not allowed."
+      pattern:
+        spec:
+          =(initContainers):
+          - =(securityContext):
+              =(privileged): "false"
+          containers:
+          - =(securityContext):
+              =(privileged): "false"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-root-user
+  annotations:
+    policies.kyverno.io/title: Disallow Root User
+    policies.kyverno.io/description: Containers must not run as root.
+spec:
+  validationFailureAction: Audit
+  rules:
+  - name: check-root-user
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kyverno
+          - longhorn-system
+          - monitoring
+    validate:
+      message: "Containers must not run as root (runAsNonRoot: true required)."
+      pattern:
+        spec:
+          =(initContainers):
+          - =(securityContext):
+              =(runAsNonRoot): "true"
+          containers:
+          - securityContext:
+              runAsNonRoot: true
