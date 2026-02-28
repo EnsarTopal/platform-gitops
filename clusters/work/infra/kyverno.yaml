@@ -14,19 +14,41 @@ spec:
       values: |
         crds:
           install: true
+
+        # --- IMPORTANT: disable kubectl-based hooks/jobs because docker.io/registry.k8s.io is blocked ---
+        # post-upgrade hook job: kyverno-clean-reports
+        policyReportsCleanup:
+          enabled: false
+
+        # post-upgrade migration hook (can also rely on kubectl image)
+        migration:
+          enabled: false
+
+        # pre-delete hook jobs (scale-to-zero, remove-configmap, webhook cleanup)
+        webhooksCleanup:
+          enabled: false
+
+        # cleanup cronjobs which use kubectl image (bitnami/kubectl by default)
+        cleanupJobs:
+          admissionReports:
+            enabled: false
+          clusterAdmissionReports:
+            enabled: false
+          ephemeralReports:
+            enabled: false
+          clusterEphemeralReports:
+            enabled: false
+          updateRequests:
+            enabled: false
+
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
-  ignoreDifferences:
-    - group: batch
-      kind: CronJob
-      namespace: kyverno
-      jsonPointers:
-        - /spec
+
   syncPolicy:
     automated:
-      prune: false
-      selfHeal: false
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
