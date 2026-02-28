@@ -11,6 +11,9 @@ spec:
     targetRevision: 3.2.6
     helm:
       releaseName: kyverno
+      values: |
+        crds:
+          install: true
   destination:
     server: https://kubernetes.default.svc
     namespace: kyverno
