@@ -15,20 +15,12 @@ spec:
         crds:
           install: true
 
-        # --- IMPORTANT: disable kubectl-based hooks/jobs because docker.io/registry.k8s.io is blocked ---
-        # post-upgrade hook job: kyverno-clean-reports
+        # --- FIX: disable Helm hooks/jobs which require pulling kubectl images ---
+        # This disables the post-upgrade hook job "kyverno-clean-reports"
         policyReportsCleanup:
           enabled: false
 
-        # post-upgrade migration hook (can also rely on kubectl image)
-        migration:
-          enabled: false
-
-        # pre-delete hook jobs (scale-to-zero, remove-configmap, webhook cleanup)
-        webhooksCleanup:
-          enabled: false
-
-        # cleanup cronjobs which use kubectl image (bitnami/kubectl by default)
+        # This disables the cleanup cronjobs (cleanup-* reports/updateRequests)
         cleanupJobs:
           admissionReports:
             enabled: false
@@ -40,6 +32,12 @@ spec:
             enabled: false
           updateRequests:
             enabled: false
+
+        # Optional: also disable other hook-like jobs if present in this chart version
+        webhooksCleanup:
+          enabled: false
+        migration:
+          enabled: false
 
   destination:
     server: https://kubernetes.default.svc
