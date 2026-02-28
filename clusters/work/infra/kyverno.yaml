@@ -15,6 +15,11 @@ spec:
         crds:
           install: true
 
+        kubectlImage:
+          registry: registry.k8s.io
+          repository: kubectl
+          tag: "v1.28.5"
+
         # Post-upgrade hook job "kyverno-clean-reports" image override (IMPORTANT)
         policyReportsCleanup:
           image:
