@@ -12,6 +12,81 @@ spec:
     helm:
       releaseName: kyverno
       values: |
+
+          # Force kubectl image for all Kyverno cleanup hooks/jobs
+
+          cleanupWebhooks:
+
+            image:
+
+              registry: registry.k8s.io
+
+              repository: kubectl
+
+              tag: "v1.28.5"
+
+          cleanupPolicyReports:
+
+            image:
+
+              registry: registry.k8s.io
+
+              repository: kubectl
+
+              tag: "v1.28.5"
+
+          cleanupJobs:
+
+            admissionReports:
+
+              image:
+
+                registry: registry.k8s.io
+
+                repository: kubectl
+
+                tag: "v1.28.5"
+
+            clusterAdmissionReports:
+
+              image:
+
+                registry: registry.k8s.io
+
+                repository: kubectl
+
+                tag: "v1.28.5"
+
+            ephemeralReports:
+
+              image:
+
+                registry: registry.k8s.io
+
+                repository: kubectl
+
+                tag: "v1.28.5"
+
+            clusterEphemeralReports:
+
+              image:
+
+                registry: registry.k8s.io
+
+                repository: kubectl
+
+                tag: "v1.28.5"
+
+            updateRequests:
+
+              image:
+
+                registry: registry.k8s.io
+
+                repository: kubectl
+
+                tag: "v1.28.5"
+
         crds:
           install: true
         cleanupJobs:
