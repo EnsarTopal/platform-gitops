@@ -3,10 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: harbor-default-securitycontext
 spec:
-  # Yeni policy gelince mevcut objeleri de değerlendirsin (en azından raporlama/uyumluluk)
   background: true
-  # Policy güncellenince mevcut resource'lara da mutate denesin (Kyverno versiyonuna göre destek)
-  mutateExistingOnPolicyUpdate: true
   rules:
   - name: set-pod-and-container-securitycontext
     match:
@@ -16,17 +13,12 @@ spec:
           - Pod
           namespaces:
           - harbor
-          selector:
-            matchLabels:
-              app: harbor
     mutate:
       patchStrategicMerge:
         spec:
-          # Pod seviyesinde (senin policy bunu da kontrol ediyordu)
           +(securityContext):
             +(runAsNonRoot): true
 
-          # Normal containers
           containers:
           - (name): "*"
             +(securityContext):
@@ -36,7 +28,6 @@ spec:
                 +(drop):
                 - ALL
 
-          # Init containers (olursa)
           +(initContainers):
           - (name): "*"
             +(securityContext):
