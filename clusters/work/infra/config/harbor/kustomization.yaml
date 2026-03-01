@@ -4,4 +4,10 @@ kind: Kustomization
 resources: []
 
 patches:
-  - path: patch-core-securitycontext.yaml
+  - path: patch-core.yaml
+  - path: patch-jobservice.yaml
+  - path: patch-portal.yaml
+  - path: patch-registry.yaml
+  - path: patch-database.yaml
+  - path: patch-redis.yaml
+  - path: patch-trivy.yaml
