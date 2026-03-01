@@ -27,6 +27,14 @@ spec:
             type: LoadBalancer
           admissionWebhooks:
             enabled: true
+            createSecretJob:
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 50m
+                  memory: 64Mi
             patchWebhookJob:
               resources:
                 requests:
