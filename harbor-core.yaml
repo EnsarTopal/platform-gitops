@@ -1,0 +1,164 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: infra-harbor:apps/Deployment:harbor/infra-harbor-core
+    deployment.kubernetes.io/revision: "8"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"argocd.argoproj.io/tracking-id":"infra-harbor:apps/Deployment:harbor/infra-harbor-core"},"labels":{"app":"harbor","chart":"harbor","component":"core","heritage":"Helm","release":"infra-harbor"},"name":"infra-harbor-core","namespace":"harbor"},"spec":{"replicas":1,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app":"harbor","component":"core","release":"infra-harbor"}},"template":{"metadata":{"annotations":{"checksum/configmap":"fef1d4d93396d4cdcdda7f8b652b55bb8d9035e118ef06a74a9337b3a2331bc4","checksum/secret":"b9ef5573a85b49f57848ad8cd80494fcc648a59c4cf1754e77454fddef92332c","checksum/secret-jobservice":"d2afd14adde55935a25b09679a665780ff9f5b2d3ef57aae550eedd30dd4f6af"},"labels":{"app":"harbor","component":"core","release":"infra-harbor"}},"spec":{"automountServiceAccountToken":false,"containers":[{"env":[{"name":"CORE_SECRET","valueFrom":{"secretKeyRef":{"key":"secret","name":"infra-harbor-core"}}},{"name":"JOBSERVICE_SECRET","valueFrom":{"secretKeyRef":{"key":"JOBSERVICE_SECRET","name":"infra-harbor-jobservice"}}}],"envFrom":[{"configMapRef":{"name":"infra-harbor-core"}},{"secretRef":{"name":"infra-harbor-core"}}],"image":"goharbor/harbor-core:v2.10.2","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":2,"httpGet":{"path":"/api/v2.0/ping","port":8080,"scheme":"HTTP"},"periodSeconds":10},"name":"core","ports":[{"containerPort":8080}],"readinessProbe":{"failureThreshold":2,"httpGet":{"path":"/api/v2.0/ping","port":8080,"scheme":"HTTP"},"periodSeconds":10},"startupProbe":{"failureThreshold":360,"httpGet":{"path":"/api/v2.0/ping","port":8080,"scheme":"HTTP"},"initialDelaySeconds":10,"periodSeconds":10},"volumeMounts":[{"mountPath":"/etc/core/app.conf","name":"config","subPath":"app.conf"},{"mountPath":"/etc/core/key","name":"secret-key","subPath":"key"},{"mountPath":"/etc/core/private_key.pem","name":"token-service-private-key","subPath":"tls.key"},{"mountPath":"/etc/core/ca","name":"ca-download"},{"mountPath":"/etc/core/token","name":"psc"}]}],"securityContext":{"fsGroup":10000,"runAsUser":10000},"terminationGracePeriodSeconds":120,"volumes":[{"configMap":{"items":[{"key":"app.conf","path":"app.conf"}],"name":"infra-harbor-core"},"name":"config"},{"name":"secret-key","secret":{"items":[{"key":"secretKey","path":"key"}],"secretName":"infra-harbor-core"}},{"name":"token-service-private-key","secret":{"secretName":"infra-harbor-core"}},{"name":"ca-download","secret":null},{"emptyDir":{},"name":"psc"}]}}}}
+  creationTimestamp: "2026-02-28T02:21:31Z"
+  generation: 8
+  labels:
+    app: harbor
+    chart: harbor
+    component: core
+    heritage: Helm
+    release: infra-harbor
+  name: infra-harbor-core
+  namespace: harbor
+  resourceVersion: "484351"
+  uid: 4d744fcb-abef-4ef7-8ac2-ff4700c6f944
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: harbor
+      component: core
+      release: infra-harbor
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/configmap: fef1d4d93396d4cdcdda7f8b652b55bb8d9035e118ef06a74a9337b3a2331bc4
+        checksum/secret: b9ef5573a85b49f57848ad8cd80494fcc648a59c4cf1754e77454fddef92332c
+        checksum/secret-jobservice: d2afd14adde55935a25b09679a665780ff9f5b2d3ef57aae550eedd30dd4f6af
+      creationTimestamp: null
+      labels:
+        app: harbor
+        component: core
+        release: infra-harbor
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: CORE_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: secret
+              name: infra-harbor-core
+        - name: JOBSERVICE_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: JOBSERVICE_SECRET
+              name: infra-harbor-jobservice
+        envFrom:
+        - configMapRef:
+            name: infra-harbor-core
+        - secretRef:
+            name: infra-harbor-core
+        image: goharbor/harbor-core:v2.10.2
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /api/v2.0/ping
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: core
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /api/v2.0/ping
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        startupProbe:
+          failureThreshold: 360
+          httpGet:
+            path: /api/v2.0/ping
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/core/app.conf
+          name: config
+          subPath: app.conf
+        - mountPath: /etc/core/key
+          name: secret-key
+          subPath: key
+        - mountPath: /etc/core/private_key.pem
+          name: token-service-private-key
+          subPath: tls.key
+        - mountPath: /etc/core/ca
+          name: ca-download
+        - mountPath: /etc/core/token
+          name: psc
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 10000
+        runAsUser: 10000
+      terminationGracePeriodSeconds: 120
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: app.conf
+            path: app.conf
+          name: infra-harbor-core
+        name: config
+      - name: secret-key
+        secret:
+          defaultMode: 420
+          items:
+          - key: secretKey
+            path: key
+          secretName: infra-harbor-core
+      - name: token-service-private-key
+        secret:
+          defaultMode: 420
+          secretName: infra-harbor-core
+      - emptyDir: {}
+        name: ca-download
+      - emptyDir: {}
+        name: psc
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-02-28T02:22:52Z"
+    lastUpdateTime: "2026-02-28T02:22:52Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-02-28T02:21:31Z"
+    lastUpdateTime: "2026-02-28T16:43:30Z"
+    message: ReplicaSet "infra-harbor-core-56995cffd4" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 8
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

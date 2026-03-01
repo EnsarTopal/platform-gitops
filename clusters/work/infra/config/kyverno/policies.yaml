@@ -6,7 +6,7 @@ metadata:
     policies.kyverno.io/title: Require Namespace Labels
     policies.kyverno.io/description: Namespaces must have 'env' and 'team' labels.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   rules:
   - name: check-namespace-labels
     match:
@@ -30,7 +30,7 @@ metadata:
     policies.kyverno.io/title: Require Resource Limits
     policies.kyverno.io/description: Containers must have CPU and memory limits.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   rules:
   - name: check-resource-limits
     match:
@@ -62,9 +62,8 @@ metadata:
   name: disallow-latest-tag
   annotations:
     policies.kyverno.io/title: Disallow Latest Tag
-    policies.kyverno.io/description: Image tag 'latest' is not allowed.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   rules:
   - name: check-image-tag
     match:
@@ -85,12 +84,9 @@ spec:
         deny:
           conditions:
             any:
-            # Deny if tag is "latest"
               - key: "{{ element.image | split(@, ':') | [-1] }}"
                 operator: Equals
                 value: "latest"
-
-            # Deny if no tag specified
               - key: "{{ contains(element.image, ':') }}"
                 operator: Equals
                 value: false
@@ -101,9 +97,8 @@ metadata:
   name: disallow-privileged-containers
   annotations:
     policies.kyverno.io/title: Disallow Privileged Containers
-    policies.kyverno.io/description: Privileged containers are not allowed.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   rules:
   - name: check-privileged
     match:
@@ -135,9 +130,8 @@ metadata:
   name: disallow-root-user
   annotations:
     policies.kyverno.io/title: Disallow Root User
-    policies.kyverno.io/description: Containers must not run as root.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   rules:
   - name: check-root-user
     match:
