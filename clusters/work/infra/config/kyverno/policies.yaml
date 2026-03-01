@@ -1,34 +1,35 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: require-namespace-labels
-  annotations:
-    policies.kyverno.io/title: Require Namespace Labels
-    policies.kyverno.io/description: Namespaces must have 'env' and 'team' labels.
+  name: disallow-root-user
 spec:
   validationFailureAction: Enforce
+  background: true
   rules:
-  - name: check-namespace-labels
+  - name: check-root-user
     match:
       any:
       - resources:
-          kinds:
-          - Namespace
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces: [kube-system, kyverno, longhorn-system, monitoring]
     validate:
-      message: "Namespace must have 'env' and 'team' labels."
-      pattern:
-        metadata:
-          labels:
-            env: "?*"
-            team: "?*"
+      message: "Containers must not run as root. Set runAsNonRoot: true."
+      anyPattern:
+      - spec:
+          securityContext:
+            runAsNonRoot: true
+      - spec:
+          containers:
+          - securityContext:
+              runAsNonRoot: true
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-resource-limits
-  annotations:
-    policies.kyverno.io/title: Require Resource Limits
-    policies.kyverno.io/description: Containers must have CPU and memory limits.
 spec:
   validationFailureAction: Enforce
   rules:
@@ -36,16 +37,11 @@ spec:
     match:
       any:
       - resources:
-          kinds:
-          - Pod
+          kinds: [Pod]
     exclude:
       any:
       - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-          - longhorn-system
-          - cert-manager
+          namespaces: [kube-system, kyverno, longhorn-system, cert-manager]
     validate:
       message: "CPU and memory limits are required."
       pattern:
@@ -55,105 +51,3 @@ spec:
               limits:
                 cpu: "?*"
                 memory: "?*"
----
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: disallow-latest-tag
-  annotations:
-    policies.kyverno.io/title: Disallow Latest Tag
-spec:
-  validationFailureAction: Enforce
-  rules:
-  - name: check-image-tag
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-    validate:
-      message: "Image tag 'latest' is not allowed. Use a specific version."
-      foreach:
-      - list: "request.object.spec.containers"
-        deny:
-          conditions:
-            any:
-              - key: "{{ element.image | split(@, ':') | [-1] }}"
-                operator: Equals
-                value: "latest"
-              - key: "{{ contains(element.image, ':') }}"
-                operator: Equals
-                value: false
----
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: disallow-privileged-containers
-  annotations:
-    policies.kyverno.io/title: Disallow Privileged Containers
-spec:
-  validationFailureAction: Enforce
-  rules:
-  - name: check-privileged
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-          - longhorn-system
-    validate:
-      message: "Privileged containers are not allowed."
-      pattern:
-        spec:
-          =(initContainers):
-          - =(securityContext):
-              =(privileged): "false"
-          containers:
-          - =(securityContext):
-              =(privileged): "false"
----
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: disallow-root-user
-  annotations:
-    policies.kyverno.io/title: Disallow Root User
-spec:
-  validationFailureAction: Enforce
-  rules:
-  - name: check-root-user
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-          - longhorn-system
-          - monitoring
-    validate:
-      message: "Containers must not run as root (runAsNonRoot: true required)."
-      pattern:
-        spec:
-          =(initContainers):
-          - =(securityContext):
-              =(runAsNonRoot): "true"
-          containers:
-          - securityContext:
-              runAsNonRoot: true

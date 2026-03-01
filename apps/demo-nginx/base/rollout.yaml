@@ -13,9 +13,6 @@ spec:
       labels:
         app: nginx
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 101
       volumes:
       - name: html
         configMap:
@@ -28,6 +25,10 @@ spec:
         image: nginxinc/nginx-unprivileged:1.25
         ports:
         - containerPort: 8080
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 101
+          allowPrivilegeEscalation: false
         resources:
           requests:
             cpu: "10m"
@@ -39,14 +40,10 @@ spec:
           httpGet:
             path: /
             port: 8080
-          initialDelaySeconds: 3
-          periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
             port: 8080
-          initialDelaySeconds: 3
-          periodSeconds: 10
         volumeMounts:
         - name: html
           mountPath: /usr/share/nginx/html/index.html
@@ -64,6 +61,11 @@ spec:
       - analysis:
           templates:
           - templateName: nginx-error-rate
+          args:
+          - name: namespace
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
       - setWeight: 50
       - pause: {duration: 30s}
       - setWeight: 100
