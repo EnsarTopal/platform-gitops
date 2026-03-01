@@ -27,14 +27,17 @@ spec:
               cert-manager.io/cluster-issuer: lab-ca-issuer
               nginx.ingress.kubernetes.io/ssl-redirect: "true"
               nginx.ingress.kubernetes.io/proxy-body-size: "0"
+              nginx.ingress.kubernetes.io/proxy-read-timeout: "900"
+              nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
         externalURL: https://harbor.lab.local
-        caSecretName: ""
         updateStrategy:
-          type: Recreate
+          type: RollingUpdate
         core:
           containerSecurityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 100m
@@ -46,6 +49,8 @@ spec:
           containerSecurityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 100m
@@ -58,6 +63,8 @@ spec:
             containerSecurityContext:
               runAsNonRoot: true
               allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
             resources:
               requests:
                 cpu: 100m
@@ -69,6 +76,8 @@ spec:
             containerSecurityContext:
               runAsNonRoot: true
               allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
             resources:
               requests:
                 cpu: 50m
@@ -80,6 +89,8 @@ spec:
           containerSecurityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 50m
@@ -89,6 +100,9 @@ spec:
               memory: 128Mi
         database:
           internal:
+            # harbor chart 1.14.x postgresql icin bu path kullaniliyor
+            podSecurityContext:
+              runAsNonRoot: true
             containerSecurityContext:
               runAsNonRoot: true
               allowPrivilegeEscalation: false
@@ -115,6 +129,8 @@ spec:
           containerSecurityContext:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 200m
