@@ -1,0 +1,131 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-read-only-rootfs
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: check-read-only-rootfs
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces:
+            - kube-system
+            - kyverno
+            - longhorn-system
+            - monitoring
+            - harbor
+            - cert-manager
+            - external-secrets
+            - ingress-nginx
+            - argo-rollouts
+            - argocd
+            - metallb-system
+    validate:
+      message: "Root filesystem must be read-only. Set readOnlyRootFilesystem: true."
+      pattern:
+        spec:
+          containers:
+          - securityContext:
+              readOnlyRootFilesystem: true
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-probes
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: check-liveness-probe
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces:
+            - kube-system
+            - kyverno
+            - longhorn-system
+            - monitoring
+            - harbor
+            - cert-manager
+            - external-secrets
+            - argo-rollouts
+            - argocd
+            - metallb-system
+    validate:
+      message: "Liveness probe is required for all containers."
+      pattern:
+        spec:
+          containers:
+          - livenessProbe:
+              periodSeconds: "?*"
+  - name: check-readiness-probe
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces:
+            - kube-system
+            - kyverno
+            - longhorn-system
+            - monitoring
+            - harbor
+            - cert-manager
+            - external-secrets
+            - argo-rollouts
+            - argocd
+            - metallb-system
+    validate:
+      message: "Readiness probe is required for all containers."
+      pattern:
+        spec:
+          containers:
+          - readinessProbe:
+              periodSeconds: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-image-registry
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: check-image-registry
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces:
+            - kube-system
+            - kyverno
+            - longhorn-system
+            - monitoring
+            - harbor
+            - cert-manager
+            - external-secrets
+            - ingress-nginx
+            - argo-rollouts
+            - argocd
+            - metallb-system
+    validate:
+      message: "Images must be pulled from harbor.lab.local registry."
+      pattern:
+        spec:
+          containers:
+          - image: "harbor.lab.local/*"
