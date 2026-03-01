@@ -1,4 +1,4 @@
-apiVersion: kyverno.io/v2alpha1
+apiVersion: kyverno.io/v2beta1
 kind: PolicyException
 metadata:
   name: pex-harbor-trivy
@@ -17,6 +17,10 @@ spec:
           namespaces:
             - harbor
           selector:
-            matchLabels:
-              app: harbor
-              component: trivy
+            matchExpressions:
+              - key: component
+                operator: In
+                values: ["trivy"]
+              - key: app
+                operator: In
+                values: ["harbor"]
