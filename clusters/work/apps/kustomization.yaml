@@ -3,4 +3,4 @@ kind: Kustomization
 
 resources:
   - demo-nginx-dev-app.yaml
-  - ../infra/harbor-config.yaml
+  - infra-harbor-config-app.yaml
