@@ -1,3 +1,4 @@
+# Policy 1: root user çalıştırma
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -26,12 +27,40 @@ spec:
           - securityContext:
               runAsNonRoot: true
 ---
+# Policy 2: privilege escalation yasak
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privilege-escalation
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: check-privilege-escalation
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces: [kube-system, kyverno, longhorn-system, monitoring]
+    validate:
+      message: "allowPrivilegeEscalation must be set to false."
+      pattern:
+        spec:
+          containers:
+          - securityContext:
+              allowPrivilegeEscalation: false
+---
+# Policy 3: resource limits zorunlu
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-resource-limits
 spec:
   validationFailureAction: Enforce
+  background: true
   rules:
   - name: check-resource-limits
     match:
@@ -41,9 +70,10 @@ spec:
     exclude:
       any:
       - resources:
-          namespaces: [kube-system, kyverno, longhorn-system, cert-manager]
+          # monitoring eklendi — prometheus/alertmanager limits koymuyor olabilir
+          namespaces: [kube-system, kyverno, longhorn-system, cert-manager, monitoring]
     validate:
-      message: "CPU and memory limits are required."
+      message: "CPU and memory limits are required for all containers."
       pattern:
         spec:
           containers:
@@ -51,3 +81,29 @@ spec:
               limits:
                 cpu: "?*"
                 memory: "?*"
+---
+# Policy 4: host network / pid / ipc erişimi yasak
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-namespaces
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: host-namespaces
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces: [kube-system, kyverno, longhorn-system]
+    validate:
+      message: "Host network, PID, and IPC namespaces are not allowed."
+      pattern:
+        spec:
+          =(hostNetwork): false
+          =(hostPID): false
+          =(hostIPC): false

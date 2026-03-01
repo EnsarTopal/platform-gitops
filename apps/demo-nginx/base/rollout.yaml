@@ -5,6 +5,8 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
   selector:
     matchLabels:
       app: nginx
@@ -20,6 +22,10 @@ spec:
           items:
           - key: index.html
             path: index.html
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
       containers:
       - name: nginx
         image: nginxinc/nginx-unprivileged:1.25
@@ -29,6 +35,9 @@ spec:
           runAsNonRoot: true
           runAsUser: 101
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false   # nginx tmp dosyaları yazdığı için false
+          capabilities:
+            drop: ["ALL"]
         resources:
           requests:
             cpu: "10m"
@@ -40,10 +49,18 @@ spec:
           httpGet:
             path: /
             port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+          timeoutSeconds: 3
         readinessProbe:
           httpGet:
             path: /
             port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 3
         volumeMounts:
         - name: html
           mountPath: /usr/share/nginx/html/index.html
@@ -57,7 +74,7 @@ spec:
           stableIngress: nginx
       steps:
       - setWeight: 20
-      - pause: {}
+      - pause: {}                         # manuel onay bekler
       - analysis:
           templates:
           - templateName: nginx-error-rate
