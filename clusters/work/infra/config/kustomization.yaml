@@ -1,2 +1,4 @@
 resources:
   - metallb-config.yaml
+  - cert-manager/clusterissuer.yaml
+  - kyverno/policies.yaml

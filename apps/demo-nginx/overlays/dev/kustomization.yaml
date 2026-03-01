@@ -9,6 +9,9 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: demo-nginx-dev.lab.local
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: demo-nginx-dev.lab.local
   - target:
       kind: Rollout
       name: nginx
@@ -25,9 +28,6 @@ patches:
       - op: replace
         path: /spec/strategy/canary/trafficRouting/nginx/stableIngress
         value: nginx-dev
-      - op: replace
-        path: /spec/strategy/canary/steps/2/analysis/templates/0/templateName
-        value: nginx-error-rate-dev
       - op: replace
         path: /spec/template/spec/volumes/0/configMap/name
         value: nginx-html-dev
