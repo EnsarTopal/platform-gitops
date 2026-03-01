@@ -14,7 +14,7 @@ spec:
     targetRevision: 4.14.3
     helm:
       releaseName: ingress
-      values: |
+      values: |-
         controller:
           resources:
             requests:
@@ -23,53 +23,18 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-
           service:
             type: LoadBalancer
-
           admissionWebhooks:
             enabled: true
-
-            # Olası key seti #1
-            createSecretJob:
+            patchWebhookJob:
               resources:
                 requests:
                   cpu: 10m
-                  memory: 64Mi
+                  memory: 32Mi
                 limits:
-                  cpu: 100m
-                  memory: 128Mi
-
-            # Olası key seti #2
-            patch:
-              resources:
-                requests:
-                  cpu: 10m
+                  cpu: 50m
                   memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-
-            # Olası key seti #3 (bazı chart varyasyonları)
-            job:
-              resources:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-
-            # Olası key seti #4 (başka varyasyon)
-            patchJob:
-              resources:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-
         metrics:
           enabled: true
           serviceMonitor:
@@ -77,43 +42,6 @@ spec:
             namespace: monitoring
             additionalLabels:
               release: monitoring
-        controller:
-          admissionWebhooks:
-            patchWebhookJob:
-              resources:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-
-        controller:
-          admissionWebhooks:
-            patch:
-              resources:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-            patchJob:
-              resources:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-            patchWebhookJob:
-              resources:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
   syncPolicy:
     automated:
       prune: true
