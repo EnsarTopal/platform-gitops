@@ -14,7 +14,7 @@ spec:
     targetRevision: 4.14.3
     helm:
       releaseName: ingress
-      values: |-
+      values: |
         controller:
           resources:
             requests:
@@ -77,6 +77,16 @@ spec:
             namespace: monitoring
             additionalLabels:
               release: monitoring
+        controller:
+          admissionWebhooks:
+            patchWebhookJob:
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
   syncPolicy:
     automated:
       prune: true
