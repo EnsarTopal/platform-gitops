@@ -130,7 +130,7 @@ spec:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             capabilities:
-              drop: ["ALL"]
+              drop: [ALL]
           resources:
             requests:
               cpu: 200m
@@ -138,6 +138,10 @@ spec:
             limits:
               cpu: 1000m
               memory: 1Gi
+          podSecurityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         persistence:
           persistentVolumeClaim:
             registry:
