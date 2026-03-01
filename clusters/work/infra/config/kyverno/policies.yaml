@@ -104,3 +104,52 @@ spec:
           =(hostNetwork): false
           =(hostPID): false
           =(hostIPC): false
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: check-privileged
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces: [kube-system, kyverno, longhorn-system]
+    validate:
+      message: "Privileged containers are not allowed."
+      pattern:
+        spec:
+          containers:
+          - =(securityContext):
+              =(privileged): false
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+  - name: check-latest-tag
+    match:
+      any:
+      - resources:
+          kinds: [Pod]
+    exclude:
+      any:
+      - resources:
+          namespaces: [kube-system, kyverno, longhorn-system]
+    validate:
+      message: "latest tag is not allowed. Use a specific image tag."
+      pattern:
+        spec:
+          containers:
+          - image: "!*:latest"
