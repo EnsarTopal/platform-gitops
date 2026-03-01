@@ -31,3 +31,6 @@ patches:
       - op: replace
         path: /spec/template/spec/volumes/0/configMap/name
         value: nginx-html-dev
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: nginxinc/nginx-unprivileged:1.25 # Güvenlik politikasına uygun image
