@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v2alpha1
+kind: PolicyException
+metadata:
+  name: pex-harbor-trivy
+  namespace: kyverno
+spec:
+  exceptions:
+    - policyName: disallow-root-user
+      ruleNames:
+        - check-root-user
+        - autogen-check-root-user
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+          namespaces:
+            - harbor
+          selector:
+            matchLabels:
+              app: harbor
+              component: trivy
