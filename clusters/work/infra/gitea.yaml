@@ -14,7 +14,10 @@ spec:
     targetRevision: 12.5.0
     helm:
       releaseName: gitea
-      values: |
+      values: |-
+        global:
+          security:
+            allowInsecureImages: true
         image:
           registry: harbor.lab.local
           repository: library/gitea
@@ -31,6 +34,16 @@ spec:
               ROOT_URL: https://gitea.lab.local
             webhook:
               ALLOWED_HOST_LIST: "*"
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 1000
+        containerSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         ingress:
           enabled: true
           className: nginx
@@ -72,12 +85,3 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
-        global:
-          security:
-            allowInsecureImages: true
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
