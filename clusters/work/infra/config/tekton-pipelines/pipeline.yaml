@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: demo-nginx-pipeline
+  namespace: tekton-ci
+spec:
+  params:
+  - name: repo-url
+    type: string
+  - name: revision
+    type: string
+    default: main
+  - name: image-tag
+    type: string
+  workspaces:
+  - name: shared-workspace
+  tasks:
+  - name: clone
+    taskRef:
+      name: git-clone
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.revision)
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+  - name: build
+    taskRef:
+      name: kaniko-build
+    runAfter: [clone]
+    params:
+    - name: image
+      value: harbor.lab.local/library/nginx-unprivileged
+    - name: tag
+      value: $(params.image-tag)
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  - name: update-gitops
+    taskRef:
+      name: update-gitops
+    runAfter: [build]
+    params:
+    - name: image-tag
+      value: $(params.image-tag)

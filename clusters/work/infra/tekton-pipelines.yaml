@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-tekton-pipelines-config
+  namespace: argocd
+spec:
+  project: platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tekton-ci
+  source:
+    repoURL: https://github.com/EnsarTopal/platform-gitops.git
+    targetRevision: HEAD
+    path: clusters/work/infra/config/tekton-pipelines
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

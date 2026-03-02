@@ -1,0 +1,91 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-clone
+  namespace: tekton-ci
+spec:
+  params:
+  - name: url
+    type: string
+  - name: revision
+    type: string
+    default: main
+  workspaces:
+  - name: output
+  steps:
+  - name: clone
+    image: harbor.lab.local/library/gitea:1.25.4-rootless
+    script: |
+      #!/bin/sh
+      git config --global http.sslVerify false
+      git clone $(params.url) $(workspaces.output.path)/source
+      cd $(workspaces.output.path)/source
+      git checkout $(params.revision)
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: kaniko-build
+  namespace: tekton-ci
+spec:
+  params:
+  - name: image
+    type: string
+  - name: tag
+    type: string
+  workspaces:
+  - name: source
+  steps:
+  - name: build-push
+    image: harbor.lab.local/library/kaniko:latest
+    args:
+    - --dockerfile=$(workspaces.source.path)/source/Dockerfile
+    - --context=$(workspaces.source.path)/source
+    - --destination=$(params.image):$(params.tag)
+    - --skip-tls-verify
+    - --cache=false
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+  volumes:
+  - name: docker-config
+    secret:
+      secretName: harbor-credentials
+      items:
+      - key: .dockerconfigjson
+        path: config.json
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: update-gitops
+  namespace: tekton-ci
+spec:
+  params:
+  - name: image-tag
+    type: string
+  - name: gitops-repo
+    type: string
+    default: "https://github.com/EnsarTopal/platform-gitops.git"
+  steps:
+  - name: update-image
+    image: harbor.lab.local/library/gitea:1.25.4-rootless
+    env:
+    - name: GITHUB_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: github-credentials
+          key: token
+    script: |
+      #!/bin/sh
+      git config --global http.sslVerify false
+      git config --global user.email "tekton@lab.local"
+      git config --global user.name "Tekton CI"
+      REPO_URL=$(echo "$(params.gitops-repo)" | sed "s|https://|https://tekton:${GITHUB_TOKEN}@|")
+      git clone ${REPO_URL} /workspace/gitops
+      cd /workspace/gitops
+      sed -i "s|value: harbor.lab.local/library/nginx-unprivileged:.*|value: harbor.lab.local/library/nginx-unprivileged:$(params.image-tag)|" \
+        apps/demo-nginx/overlays/dev/kustomization.yaml
+      git add apps/demo-nginx/overlays/dev/kustomization.yaml
+      git commit -m "ci: update demo-nginx image to $(params.image-tag)"
+      git push

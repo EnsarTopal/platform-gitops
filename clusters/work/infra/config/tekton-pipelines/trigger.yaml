@@ -1,0 +1,95 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: demo-nginx-listener
+  namespace: tekton-ci
+spec:
+  serviceAccountName: tekton-pipeline-sa
+  triggers:
+  - name: gitea-push
+    interceptors:
+    - ref:
+        name: cel
+      params:
+      - name: filter
+        value: "header.match('X-Gitea-Event', 'push')"
+    bindings:
+    - ref: demo-nginx-binding
+    template:
+      ref: demo-nginx-template
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: demo-nginx-binding
+  namespace: tekton-ci
+spec:
+  params:
+  - name: repo-url
+    value: $(body.repository.clone_url)
+  - name: revision
+    value: $(body.after)
+  - name: image-tag
+    value: $(body.after[0:7])
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: demo-nginx-template
+  namespace: tekton-ci
+spec:
+  params:
+  - name: repo-url
+  - name: revision
+  - name: image-tag
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1
+    kind: PipelineRun
+    metadata:
+      generateName: demo-nginx-run-
+      namespace: tekton-ci
+    spec:
+      pipelineRef:
+        name: demo-nginx-pipeline
+      params:
+      - name: repo-url
+        value: $(tt.params.repo-url)
+      - name: revision
+        value: $(tt.params.revision)
+      - name: image-tag
+        value: $(tt.params.image-tag)
+      workspaces:
+      - name: shared-workspace
+        volumeClaimTemplate:
+          spec:
+            accessModes: [ReadWriteOnce]
+            storageClassName: longhorn
+            resources:
+              requests:
+                storage: 1Gi
+      serviceAccountName: tekton-pipeline-sa
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tekton-eventlistener
+  namespace: tekton-ci
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tekton-listener.lab.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: el-demo-nginx-listener
+            port:
+              number: 8080
+  tls:
+  - secretName: tekton-listener-tls
+    hosts:
+    - tekton-listener.lab.local
