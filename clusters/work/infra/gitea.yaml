@@ -22,7 +22,7 @@ spec:
         image:
           registry: harbor.lab.local
           repository: library/gitea
-          tag: 1.25.4-rootless
+          tag: 1.25.4
           rootless: true
         gitea:
           admin:
@@ -35,16 +35,32 @@ spec:
               ROOT_URL: https://gitea.lab.local
             webhook:
               ALLOWED_HOST_LIST: "*"
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
+          initContainers:
+            containerSecurityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              runAsNonRoot: true
+              runAsUser: 1000
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 50m
+                memory: 64Mi
         podSecurityContext:
           runAsNonRoot: true
           runAsUser: 1000
           fsGroup: 1000
-        containerSecurityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: ["ALL"]
         resources:
           requests:
             cpu: 100m
