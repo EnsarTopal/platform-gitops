@@ -23,7 +23,7 @@ spec:
               DB_TYPE: postgres
               HOST: gitea-postgresql:5432
 
-        # Kyverno Fix: Tüm init containerlara kaynak limiti tanımlıyoruz
+        # Kyverno için kaynak limitleri
         initContainers:
           resources:
             limits:
@@ -33,11 +33,16 @@ spec:
               cpu: 50m
               memory: 64Mi
 
+        # Sadece standart postgresql açık olmalı
         postgresql:
           enabled: true
           primary:
             persistence:
               storageClass: longhorn
+        
+        # Çakışmayı önlemek için HA modunu kapatıyoruz
+        postgresql-ha:
+          enabled: false
 
         valkey-cluster:
           enabled: true
