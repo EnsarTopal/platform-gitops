@@ -37,43 +37,24 @@ spec:
             webhook:
               ALLOWED_HOST_LIST: "*"
 
-        # Kyverno require-resource-limits FIX (MAIN container)
+        # Ana Gitea Pod Kaynakları
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 200m
+            memory: 512Mi
           limits:
-            cpu: 500m
+            cpu: 1000m
             memory: 1Gi
 
-        # Kyverno require-resource-limits FIX (INIT containers)
+        # Kyverno için Init Container limitleri (Kritik: CrashLoop'u önler)
         initContainers:
           resources:
             requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
               cpu: 100m
               memory: 128Mi
-            limits:
-              cpu: 300m
-              memory: 512Mi
-
-        podSecurityContext:
-          fsGroup: 1000
-
-        containerSecurityContext:
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1000
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: ["ALL"]
-
-        persistence:
-          enabled: true
-          size: 5Gi
-          storageClass: longhorn
-
-        postgresql-ha:
-          enabled: false
 
         postgresql:
           enabled: true
@@ -82,8 +63,6 @@ spec:
             repository: library/postgresql
             tag: 17.6.0-debian-12-r4
           primary:
-            containerSecurityContext:
-              readOnlyRootFilesystem: true
             persistence:
               size: 5Gi
               storageClass: longhorn
@@ -94,41 +73,17 @@ spec:
             registry: harbor.lab.local
             repository: library/valkey-cluster
             tag: 8.1.3-debian-12-r3
-
-          # ✅ Asıl problem: OOM (Exit 137) -> memory arttır
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
-
-          # ✅ Lab için AOF kapat (RAM/disk baskısını azaltır)
-          aofEnabled: false
-          valkey:
-            aofEnabled: false
-
-          # ReadOnlyRootFS ayarın kalsın (şu an mount’lar zaten rw görünüyor)
-          containerSecurityContext:
-            readOnlyRootFilesystem: true
-
+          # AOF'u kapatmak ve belleği yönetmek için:
+          usePassword: false
           master:
-            extraVolumes:
-              - name: tmp
-                emptyDir: {}
-            extraVolumeMounts:
-              - name: tmp
-                mountPath: /tmp
-
-          replica:
-            extraVolumes:
-              - name: tmp
-                emptyDir: {}
-            extraVolumeMounts:
-              - name: tmp
-                mountPath: /tmp
-
+            disableAof: true
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 200m
+                memory: 512Mi
           persistence:
             storageClass: longhorn
             size: 8Gi
