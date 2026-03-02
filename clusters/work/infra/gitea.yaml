@@ -15,12 +15,12 @@ spec:
     helm:
       releaseName: gitea
       values: |-
+        # Bitnami subchart'lar image verify NOTES'ta fail atmasın
         global:
           imageRegistry: harbor.lab.local
           security:
             allowInsecureImages: true
 
-        # --- Gitea image (rootless tag'i chart ekliyor) ---
         image:
           registry: harbor.lab.local
           repository: library/gitea
@@ -39,7 +39,6 @@ spec:
             webhook:
               ALLOWED_HOST_LIST: "*"
 
-        # ✅ Kyverno require-resource-limits (MAIN container)
         resources:
           requests:
             cpu: 100m
@@ -48,7 +47,6 @@ spec:
             cpu: 500m
             memory: 1Gi
 
-        # ✅ Kyverno require-resource-limits (INIT containers)
         initContainers:
           resources:
             requests:
@@ -58,7 +56,6 @@ spec:
               cpu: 300m
               memory: 512Mi
 
-        # Kyverno & securityContext
         podSecurityContext:
           fsGroup: 1000
         containerSecurityContext:
@@ -74,7 +71,6 @@ spec:
           size: 10Gi
           storageClass: longhorn
 
-        # ✅ DB mode çakışması yaşamayalım
         postgresql-ha:
           enabled: false
 
@@ -91,22 +87,38 @@ spec:
               size: 5Gi
               storageClass: longhorn
 
-        # --- Valkey cluster ---
-        # Exit 137 + probe fail -> çok büyük ihtimal memory yetmiyor / cluster ayağa kalkamıyor.
-        # Bu yüzden resources'u yükseltiyoruz + podManagementPolicy'i OrderedReady yapıyoruz.
         valkey-cluster:
           enabled: true
+
+          # ekstra garanti: subchart global'ına da bas
+          global:
+            security:
+              allowInsecureImages: true
+
           image:
             registry: harbor.lab.local
-            repository: library/valkey-cluster
+            # sende error'da "harbor.lab.local/bitnamilegacy/valkey-cluster" diye geçiyor,
+            # o yüzden repository'i bitnamilegacy yapıyoruz:
+            repository: bitnamilegacy/valkey-cluster
             tag: 8.1.3-debian-12-r3
 
-          # bitnami container readOnlyRootFilesystem ile bazen sıkıntı çıkarabiliyor.
-          # chart zaten /opt/bitnami/... için emptyDir mount ediyor, ama iş uzarsa bunu false'a çekebiliriz.
+          # exporter/os-shell da verify listesine takılıyor -> onları da harbor'dan verelim
+          metrics:
+            enabled: true
+            image:
+              registry: harbor.lab.local
+              repository: bitnamilegacy/redis-exporter
+              tag: 1.76.0-debian-12-r0
+
+          sysctl:
+            image:
+              registry: harbor.lab.local
+              repository: bitnamilegacy/os-shell
+              tag: 12-debian-12-r51
+
           containerSecurityContext:
             readOnlyRootFilesystem: true
 
-          # ✅ kritik: bellek artır
           resources:
             requests:
               cpu: 100m
@@ -115,10 +127,8 @@ spec:
               cpu: 500m
               memory: 1Gi
 
-          # cluster ayağa kalkana kadar daha deterministik
           podManagementPolicy: OrderedReady
 
-          # /tmp ihtiyacı için (sen zaten eklemiştin, devam)
           master:
             extraVolumes:
               - name: tmp
