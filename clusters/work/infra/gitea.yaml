@@ -21,9 +21,10 @@ spec:
         image:
           registry: harbor.lab.local
           repository: library/gitea
-          # Tag içindeki -rootless kısmını sildik çünkü altındaki rootless: true flag'i bunu ekliyor
+          # DÜZELTME: Sadece versiyon yazıyoruz, rootless:true eki otomatik getirecek
           tag: 1.25.4
           rootless: true
+        
         gitea:
           admin:
             username: gitea_admin
@@ -36,10 +37,8 @@ spec:
             webhook:
               ALLOWED_HOST_LIST: "*"
         
-        # Kyverno hatasını çözmek için Read-Only Root FS eklendi
+        # Kyverno & Security Fixes
         podSecurityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
           fsGroup: 1000
         containerSecurityContext:
           readOnlyRootFilesystem: true
@@ -49,27 +48,11 @@ spec:
           capabilities:
             drop: ["ALL"]
         
-        ingress:
-          enabled: true
-          className: nginx
-          annotations:
-            cert-manager.io/cluster-issuer: selfsigned-issuer
-          hosts:
-            - host: gitea.lab.local
-              paths:
-                - path: /
-                  pathType: Prefix
-          tls:
-            - secretName: gitea-tls
-              hosts:
-                - gitea.lab.local
         persistence:
           enabled: true
           size: 5Gi
           storageClass: longhorn
 
-        postgresql-ha:
-          enabled: false
         postgresql:
           enabled: true
           image:
@@ -77,11 +60,11 @@ spec:
             repository: library/postgresql
             tag: 17.6.0-debian-12-r4
           primary:
+            containerSecurityContext:
+              readOnlyRootFilesystem: true
             persistence:
               size: 5Gi
               storageClass: longhorn
-            containerSecurityContext:
-              readOnlyRootFilesystem: true
 
         valkey-cluster:
           enabled: true
@@ -89,7 +72,7 @@ spec:
             registry: harbor.lab.local
             repository: library/valkey-cluster
             tag: 8.1.3-debian-12-r3
-          # Valkey'in Read-Only FS üzerinde çalışabilmesi için /tmp mount'u
+          # Valkey Read-Only RootFS düzeltmeleri
           containerSecurityContext:
             readOnlyRootFilesystem: true
           master:
@@ -103,10 +86,15 @@ spec:
             storageClass: longhorn
             size: 8Gi
         
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 500m
-            memory: 512Mi
+        ingress:
+          enabled: true
+          className: nginx
+          hosts:
+            - host: gitea.lab.local
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: gitea-tls
+              hosts:
+                - gitea.lab.local
