@@ -1,4 +1,5 @@
 resources:
+  - tekton.yaml
   - gitea.yaml
   - rollouts.yaml
   - loki.yaml
