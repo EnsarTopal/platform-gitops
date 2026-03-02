@@ -18,13 +18,14 @@ spec:
         global:
           security:
             allowInsecureImages: true
+
         image:
           registry: harbor.lab.local
           repository: library/gitea
           # DÜZELTME: Sadece versiyon yazıyoruz, rootless:true eki otomatik getirecek
           tag: 1.25.4
           rootless: true
-        
+
         gitea:
           admin:
             username: gitea_admin
@@ -36,10 +37,11 @@ spec:
               ROOT_URL: https://gitea.lab.local
             webhook:
               ALLOWED_HOST_LIST: "*"
-        
+
         # Kyverno & Security Fixes
         podSecurityContext:
           fsGroup: 1000
+
         containerSecurityContext:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
@@ -47,11 +49,15 @@ spec:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
-        
+
         persistence:
           enabled: true
           size: 5Gi
           storageClass: longhorn
+
+        # ✅ KRİTİK FIX: postgresql açıkken postgresql-ha kapalı olmalı
+        postgresql-ha:
+          enabled: false
 
         postgresql:
           enabled: true
@@ -85,7 +91,7 @@ spec:
           persistence:
             storageClass: longhorn
             size: 8Gi
-        
+
         ingress:
           enabled: true
           className: nginx
