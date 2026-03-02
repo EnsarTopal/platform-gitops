@@ -28,6 +28,7 @@ spec:
             - metallb-system
             - tekton-pipelines
             - tekton-pipelines-resolvers
+            - tekton-ci
     validate:
       message: "Root filesystem must be read-only. Set readOnlyRootFilesystem: true."
       pattern:
@@ -65,6 +66,7 @@ spec:
             - metallb-system
             - tekton-pipelines
             - tekton-pipelines-resolvers
+            - tekton-ci
     validate:
       message: "Liveness probe is required for all containers."
       pattern:
@@ -93,6 +95,7 @@ spec:
             - metallb-system
             - tekton-pipelines
             - tekton-pipelines-resolvers
+            - tekton-ci
     validate:
       message: "Readiness probe is required for all containers."
       pattern:
@@ -131,6 +134,7 @@ spec:
             - metallb-system
             - tekton-pipelines
             - tekton-pipelines-resolvers
+            - tekton-ci
     validate:
       message: "Images must be pulled from harbor.lab.local registry."
       pattern:

@@ -14,7 +14,7 @@ spec:
     exclude:
       any:
       - resources:
-          namespaces: [kube-system, kyverno, longhorn-system, monitoring, metallb-system, tekton-pipelines, tekton-pipelines-resolvers]
+          namespaces: [kube-system, kyverno, longhorn-system, monitoring, metallb-system, tekton-pipelines, tekton-pipelines-resolvers, tekton-ci]
     validate:
       message: "Containers must not run as root. Set runAsNonRoot: true."
       anyPattern:
@@ -44,7 +44,7 @@ spec:
       - resources:
           # argo-rollouts dashboard henuz upstream'de duzeltilmemis:
           # https://github.com/argoproj/argo-rollouts/issues/3127
-          namespaces: [kube-system, kyverno, longhorn-system, monitoring, argo-rollouts, metallb-system, tekton-pipelines, tekton-pipelines-resolvers]
+          namespaces: [kube-system, kyverno, longhorn-system, monitoring, argo-rollouts, metallb-system, tekton-pipelines, tekton-pipelines-resolvers, tekton-ci]
     validate:
       message: "allowPrivilegeEscalation must be set to false."
       pattern:
@@ -69,7 +69,7 @@ spec:
     exclude:
       any:
       - resources:
-          namespaces: [kube-system, kyverno, longhorn-system, cert-manager, monitoring, metallb-system, tekton-pipelines, tekton-pipelines-resolvers]
+          namespaces: [kube-system, kyverno, longhorn-system, cert-manager, monitoring, metallb-system, tekton-pipelines, tekton-pipelines-resolvers, tekton-ci]
     validate:
       message: "CPU and memory limits are required for all containers."
       pattern:
@@ -96,7 +96,7 @@ spec:
     exclude:
       any:
       - resources:
-          namespaces: [kube-system, kyverno, longhorn-system, metallb-system, tekton-pipelines, tekton-pipelines-resolvers]
+          namespaces: [kube-system, kyverno, longhorn-system, metallb-system, tekton-pipelines, tekton-pipelines-resolvers, tekton-ci]
     validate:
       message: "Host network, PID, and IPC namespaces are not allowed."
       pattern:
@@ -121,7 +121,7 @@ spec:
     exclude:
       any:
       - resources:
-          namespaces: [kube-system, kyverno, longhorn-system, metallb-system, tekton-pipelines, tekton-pipelines-resolvers]
+          namespaces: [kube-system, kyverno, longhorn-system, metallb-system, tekton-pipelines, tekton-pipelines-resolvers, tekton-ci]
     validate:
       message: "Privileged containers are not allowed."
       pattern:
@@ -146,7 +146,7 @@ spec:
     exclude:
       any:
       - resources:
-          namespaces: [kube-system, kyverno, longhorn-system, metallb-system, tekton-pipelines, tekton-pipelines-resolvers]
+          namespaces: [kube-system, kyverno, longhorn-system, metallb-system, tekton-pipelines, tekton-pipelines-resolvers, tekton-ci]
     validate:
       message: "latest tag is not allowed. Use a specific image tag."
       pattern:
