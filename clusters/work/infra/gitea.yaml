@@ -1,0 +1,65 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-gitea
+  namespace: argocd
+spec:
+  project: platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitea
+  source:
+    chart: gitea
+    repoURL: https://dl.gitea.com/charts/
+    targetRevision: 12.5.0
+    helm:
+      releaseName: gitea
+      values: |-
+        gitea:
+          admin:
+            username: gitea_admin
+            password: "Gitea12345!"
+            email: "admin@lab.local"
+          config:
+            server:
+              DOMAIN: gitea.lab.local
+              ROOT_URL: https://gitea.lab.local
+            webhook:
+              ALLOWED_HOST_LIST: "*"
+        ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: selfsigned-issuer
+          hosts:
+            - host: gitea.lab.local
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: gitea-tls
+              hosts:
+                - gitea.lab.local
+        persistence:
+          enabled: true
+          size: 5Gi
+        postgresql-ha:
+          enabled: false
+        postgresql:
+          enabled: true
+          primary:
+            persistence:
+              size: 5Gi
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

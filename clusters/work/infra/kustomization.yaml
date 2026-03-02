@@ -1,4 +1,5 @@
 resources:
+  - gitea.yaml
   - rollouts.yaml
   - loki.yaml
   - promtail.yaml
