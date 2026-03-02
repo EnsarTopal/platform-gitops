@@ -15,88 +15,33 @@ spec:
     helm:
       releaseName: gitea
       values: |-
-        global:
-          security:
-            allowInsecureImages: true
-
-        image:
-          registry: harbor.lab.local
-          repository: library/gitea
-          tag: 1.25.4
-          rootless: true
-
         gitea:
           admin:
-            username: gitea_admin
             password: "Gitea12345!"
-            email: "admin@lab.local"
           config:
-            server:
-              DOMAIN: gitea.lab.local
-              ROOT_URL: https://gitea.lab.local
-            webhook:
-              ALLOWED_HOST_LIST: "*"
+            database:
+              DB_TYPE: postgres
+              HOST: gitea-postgresql:5432
 
-        # Ana Gitea Pod Kaynakları
-        resources:
-          requests:
-            cpu: 200m
-            memory: 512Mi
-          limits:
-            cpu: 1000m
-            memory: 1Gi
-
-        # Kyverno için Init Container limitleri (Kritik: CrashLoop'u önler)
+        # Kyverno Fix: Tüm init containerlara kaynak limiti tanımlıyoruz
         initContainers:
           resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
             limits:
               cpu: 100m
               memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
 
         postgresql:
           enabled: true
-          image:
-            registry: harbor.lab.local
-            repository: library/postgresql
-            tag: 17.6.0-debian-12-r4
           primary:
             persistence:
-              size: 5Gi
               storageClass: longhorn
 
         valkey-cluster:
           enabled: true
-          image:
-            registry: harbor.lab.local
-            repository: library/valkey-cluster
-            tag: 8.1.3-debian-12-r3
-          # AOF'u kapatmak ve belleği yönetmek için:
-          usePassword: false
           master:
             disableAof: true
-            resources:
-              requests:
-                cpu: 100m
-                memory: 256Mi
-              limits:
-                cpu: 200m
-                memory: 512Mi
           persistence:
             storageClass: longhorn
-            size: 8Gi
-
-        ingress:
-          enabled: true
-          className: nginx
-          hosts:
-            - host: gitea.lab.local
-              paths:
-                - path: /
-                  pathType: Prefix
-          tls:
-            - secretName: gitea-tls
-              hosts:
-                - gitea.lab.local
