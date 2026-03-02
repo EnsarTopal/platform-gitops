@@ -38,6 +38,15 @@ spec:
             webhook:
               ALLOWED_HOST_LIST: "*"
 
+        # ✅ Kyverno require-resource-limits FIX (Gitea main container)
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+
         # Kyverno & Security Fixes
         podSecurityContext:
           fsGroup: 1000
