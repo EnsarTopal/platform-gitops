@@ -34,7 +34,7 @@ spec:
         fsGroup: 101
       containers:
       - name: nginx
-        image: nginxinc/nginx-unprivileged:1.25
+        image: harbor.lab.local/library/nginx-unprivileged:1.27
         ports:
         - containerPort: 8080
         securityContext:
