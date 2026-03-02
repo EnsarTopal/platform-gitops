@@ -26,6 +26,8 @@ spec:
             - argo-rollouts
             - argocd
             - metallb-system
+            - tekton-pipelines
+            - tekton-pipelines-resolvers
     validate:
       message: "Root filesystem must be read-only. Set readOnlyRootFilesystem: true."
       pattern:
@@ -61,6 +63,8 @@ spec:
             - argo-rollouts
             - argocd
             - metallb-system
+            - tekton-pipelines
+            - tekton-pipelines-resolvers
     validate:
       message: "Liveness probe is required for all containers."
       pattern:
@@ -87,6 +91,8 @@ spec:
             - argo-rollouts
             - argocd
             - metallb-system
+            - tekton-pipelines
+            - tekton-pipelines-resolvers
     validate:
       message: "Readiness probe is required for all containers."
       pattern:
@@ -123,6 +129,8 @@ spec:
             - argo-rollouts
             - argocd
             - metallb-system
+            - tekton-pipelines
+            - tekton-pipelines-resolvers
     validate:
       message: "Images must be pulled from harbor.lab.local registry."
       pattern:
