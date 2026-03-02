@@ -15,84 +15,131 @@ spec:
     helm:
       releaseName: gitea
       values: |-
-        # Global Registry Ayarı
         global:
           imageRegistry: harbor.lab.local
+          security:
+            allowInsecureImages: true
 
+        # --- Gitea image (rootless tag'i chart ekliyor) ---
         image:
           registry: harbor.lab.local
-          repository: gitea/gitea
-          tag: 1.21.7
+          repository: library/gitea
+          tag: 1.25.4
+          rootless: true
 
         gitea:
           admin:
+            username: gitea_admin
             password: "Gitea12345!"
+            email: "admin@lab.local"
           config:
-            database:
-              DB_TYPE: postgres
-              HOST: gitea-postgresql:5432
-          
-          # Root kullanıcısını engelliyoruz
-          podSecurityContext:
-            fsGroup: 1000
-            runAsNonRoot: true
-            runAsUser: 1000
-          
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1000
-            capabilities:
-              drop:
-                - ALL
+            server:
+              DOMAIN: gitea.lab.local
+              ROOT_URL: https://gitea.lab.local
+            webhook:
+              ALLOWED_HOST_LIST: "*"
 
-          # Ana Gitea container'ı için kaynak limitleri
-          resources:
-            limits:
-              cpu: 500m
-              memory: 512Mi
-            requests:
-              cpu: 200m
-              memory: 256Mi
+        # ✅ Kyverno require-resource-limits (MAIN container)
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
 
-        # Init Container kaynak limitleri
+        # ✅ Kyverno require-resource-limits (INIT containers)
         initContainers:
           resources:
-            limits:
+            requests:
               cpu: 100m
               memory: 128Mi
-            requests:
-              cpu: 50m
-              memory: 64Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+
+        # Kyverno & securityContext
+        podSecurityContext:
+          fsGroup: 1000
+        containerSecurityContext:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+
+        persistence:
+          enabled: true
+          size: 10Gi
+          storageClass: longhorn
+
+        # ✅ DB mode çakışması yaşamayalım
+        postgresql-ha:
+          enabled: false
 
         postgresql:
           enabled: true
           image:
             registry: harbor.lab.local
+            repository: library/postgresql
+            tag: 17.6.0-debian-12-r4
           primary:
+            containerSecurityContext:
+              readOnlyRootFilesystem: true
             persistence:
+              size: 5Gi
               storageClass: longhorn
-            resources:
-              limits:
-                cpu: 300m
-                memory: 512Mi
-              requests:
-                cpu: 100m
-                memory: 256Mi
 
-        postgresql-ha:
-          enabled: false
-
+        # --- Valkey cluster ---
+        # Exit 137 + probe fail -> çok büyük ihtimal memory yetmiyor / cluster ayağa kalkamıyor.
+        # Bu yüzden resources'u yükseltiyoruz + podManagementPolicy'i OrderedReady yapıyoruz.
         valkey-cluster:
           enabled: true
           image:
             registry: harbor.lab.local
+            repository: library/valkey-cluster
+            tag: 8.1.3-debian-12-r3
+
+          # bitnami container readOnlyRootFilesystem ile bazen sıkıntı çıkarabiliyor.
+          # chart zaten /opt/bitnami/... için emptyDir mount ediyor, ama iş uzarsa bunu false'a çekebiliriz.
+          containerSecurityContext:
+            readOnlyRootFilesystem: true
+
+          # ✅ kritik: bellek artır
           resources:
-            limits:
-              cpu: 200m
-              memory: 256Mi
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+          # cluster ayağa kalkana kadar daha deterministik
+          podManagementPolicy: OrderedReady
+
+          # /tmp ihtiyacı için (sen zaten eklemiştin, devam)
+          master:
+            extraVolumes:
+              - name: tmp
+                emptyDir: {}
+            extraVolumeMounts:
+              - name: tmp
+                mountPath: /tmp
+
           persistence:
             storageClass: longhorn
+            size: 8Gi
+
+        ingress:
+          enabled: true
+          className: nginx
+          hosts:
+            - host: gitea.lab.local
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: gitea-tls
+              hosts:
+                - gitea.lab.local
