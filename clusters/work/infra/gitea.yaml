@@ -14,7 +14,7 @@ spec:
     targetRevision: 12.5.0
     helm:
       releaseName: gitea
-      values: |-
+      values: |
         image:
           registry: harbor.lab.local
           repository: library/gitea
@@ -72,6 +72,9 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
+        global:
+          security:
+            allowInsecureImages: true
   syncPolicy:
     automated:
       prune: true
