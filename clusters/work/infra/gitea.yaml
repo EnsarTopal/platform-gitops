@@ -15,18 +15,15 @@ spec:
     helm:
       releaseName: gitea
       values: |-
-        # Bitnami subchart'lar image verify NOTES'ta fail atmasın
         global:
           imageRegistry: harbor.lab.local
           security:
             allowInsecureImages: true
-
         image:
           registry: harbor.lab.local
           repository: library/gitea
-          tag: 1.25.4
+          tag: 1.25.4-rootless
           rootless: true
-
         gitea:
           admin:
             username: gitea_admin
@@ -38,7 +35,16 @@ spec:
               ROOT_URL: https://gitea.lab.local
             webhook:
               ALLOWED_HOST_LIST: "*"
-
+        podSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 1000
+        containerSecurityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         resources:
           requests:
             cpu: 100m
@@ -46,104 +52,15 @@ spec:
           limits:
             cpu: 500m
             memory: 1Gi
-
-        initContainers:
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 300m
-              memory: 512Mi
-
-        podSecurityContext:
-          fsGroup: 1000
-        containerSecurityContext:
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1000
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: ["ALL"]
-
         persistence:
           enabled: true
           size: 10Gi
           storageClass: longhorn
-
-        postgresql-ha:
-          enabled: false
-
-        postgresql:
-          enabled: true
-          image:
-            registry: harbor.lab.local
-            repository: library/postgresql
-            tag: 17.6.0-debian-12-r4
-          primary:
-            containerSecurityContext:
-              readOnlyRootFilesystem: true
-            persistence:
-              size: 5Gi
-              storageClass: longhorn
-
-        valkey-cluster:
-          enabled: true
-
-          # ekstra garanti: subchart global'ına da bas
-          global:
-            security:
-              allowInsecureImages: true
-
-          image:
-            registry: harbor.lab.local
-            # sende error'da "harbor.lab.local/bitnamilegacy/valkey-cluster" diye geçiyor,
-            # o yüzden repository'i bitnamilegacy yapıyoruz:
-            repository: bitnamilegacy/valkey-cluster
-            tag: 8.1.3-debian-12-r3
-
-          # exporter/os-shell da verify listesine takılıyor -> onları da harbor'dan verelim
-          metrics:
-            enabled: true
-            image:
-              registry: harbor.lab.local
-              repository: bitnamilegacy/redis-exporter
-              tag: 1.76.0-debian-12-r0
-
-          sysctl:
-            image:
-              registry: harbor.lab.local
-              repository: bitnamilegacy/os-shell
-              tag: 12-debian-12-r51
-
-          containerSecurityContext:
-            readOnlyRootFilesystem: true
-
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
-
-          podManagementPolicy: OrderedReady
-
-          master:
-            extraVolumes:
-              - name: tmp
-                emptyDir: {}
-            extraVolumeMounts:
-              - name: tmp
-                mountPath: /tmp
-
-          persistence:
-            storageClass: longhorn
-            size: 8Gi
-
         ingress:
           enabled: true
           className: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: selfsigned-issuer
           hosts:
             - host: gitea.lab.local
               paths:
@@ -153,3 +70,43 @@ spec:
             - secretName: gitea-tls
               hosts:
                 - gitea.lab.local
+        postgresql-ha:
+          enabled: false
+        postgresql:
+          enabled: true
+          image:
+            registry: harbor.lab.local
+            repository: library/postgresql
+            tag: 17.6.0-debian-12-r4
+          primary:
+            persistence:
+              size: 5Gi
+              storageClass: longhorn
+        valkey-cluster:
+          enabled: true
+          global:
+            imageRegistry: harbor.lab.local
+            security:
+              allowInsecureImages: true
+          image:
+            registry: harbor.lab.local
+            repository: library/valkey-cluster
+            tag: 8.1.3-debian-12-r3
+          metrics:
+            enabled: false
+          persistence:
+            storageClass: longhorn
+            size: 8Gi
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
