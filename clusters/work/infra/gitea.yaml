@@ -22,7 +22,6 @@ spec:
         image:
           registry: harbor.lab.local
           repository: library/gitea
-          # Sadece versiyon; chart rootless tag’i ekliyor
           tag: 1.25.4
           rootless: true
 
@@ -38,7 +37,7 @@ spec:
             webhook:
               ALLOWED_HOST_LIST: "*"
 
-        # ✅ Kyverno require-resource-limits FIX (MAIN container)
+        # Kyverno require-resource-limits FIX (MAIN container)
         resources:
           requests:
             cpu: 100m
@@ -47,7 +46,7 @@ spec:
             cpu: 500m
             memory: 1Gi
 
-        # ✅ Kyverno require-resource-limits FIX (INIT containers)
+        # Kyverno require-resource-limits FIX (INIT containers)
         initContainers:
           resources:
             requests:
@@ -57,7 +56,6 @@ spec:
               cpu: 300m
               memory: 512Mi
 
-        # Kyverno & Security Fixes
         podSecurityContext:
           fsGroup: 1000
 
@@ -74,7 +72,6 @@ spec:
           size: 5Gi
           storageClass: longhorn
 
-        # ✅ DB mode çakışması fix
         postgresql-ha:
           enabled: false
 
@@ -97,8 +94,25 @@ spec:
             registry: harbor.lab.local
             repository: library/valkey-cluster
             tag: 8.1.3-debian-12-r3
+
+          # ✅ Asıl problem: OOM (Exit 137) -> memory arttır
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+          # ✅ Lab için AOF kapat (RAM/disk baskısını azaltır)
+          aofEnabled: false
+          valkey:
+            aofEnabled: false
+
+          # ReadOnlyRootFS ayarın kalsın (şu an mount’lar zaten rw görünüyor)
           containerSecurityContext:
             readOnlyRootFilesystem: true
+
           master:
             extraVolumes:
               - name: tmp
@@ -106,6 +120,15 @@ spec:
             extraVolumeMounts:
               - name: tmp
                 mountPath: /tmp
+
+          replica:
+            extraVolumes:
+              - name: tmp
+                emptyDir: {}
+            extraVolumeMounts:
+              - name: tmp
+                mountPath: /tmp
+
           persistence:
             storageClass: longhorn
             size: 8Gi
