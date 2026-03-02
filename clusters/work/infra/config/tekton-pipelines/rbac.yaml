@@ -15,8 +15,18 @@ metadata:
   name: tekton-pipeline-role
 rules:
 - apiGroups: [""]
-  resources: ["secrets", "configmaps"]
-  verbs: ["get", "list"]
+  resources: ["secrets", "configmaps", "serviceaccounts"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["tekton.dev"]
+  resources: ["tasks", "taskruns", "pipelines", "pipelineruns"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["triggers.tekton.dev"]
+  resources: ["triggertemplates", "triggerbindings", "clustertriggerbindings",
+              "eventlisteners", "triggers", "interceptors", "clusterinterceptors"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
