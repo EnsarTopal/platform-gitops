@@ -100,7 +100,7 @@ kind: ClusterPolicy
 metadata:
   name: require-image-registry
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: check-image-registry
