@@ -15,6 +15,15 @@ spec:
     helm:
       releaseName: gitea
       values: |-
+        # Global Registry Ayarı
+        global:
+          imageRegistry: harbor.lab.local
+
+        image:
+          registry: harbor.lab.local
+          repository: gitea/gitea
+          tag: 1.21.7
+
         gitea:
           admin:
             password: "Gitea12345!"
@@ -22,8 +31,31 @@ spec:
             database:
               DB_TYPE: postgres
               HOST: gitea-postgresql:5432
+          
+          # Root kullanıcısını engelliyoruz
+          podSecurityContext:
+            fsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          
+          containerSecurityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
 
-        # Kyverno için kaynak limitleri
+          # Ana Gitea container'ı için kaynak limitleri
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+
+        # Init Container kaynak limitleri
         initContainers:
           resources:
             limits:
@@ -33,20 +65,34 @@ spec:
               cpu: 50m
               memory: 64Mi
 
-        # Sadece standart postgresql açık olmalı
         postgresql:
           enabled: true
+          image:
+            registry: harbor.lab.local
           primary:
             persistence:
               storageClass: longhorn
-        
-        # Çakışmayı önlemek için HA modunu kapatıyoruz
+            resources:
+              limits:
+                cpu: 300m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 256Mi
+
         postgresql-ha:
           enabled: false
 
         valkey-cluster:
           enabled: true
-          master:
-            disableAof: true
+          image:
+            registry: harbor.lab.local
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
           persistence:
             storageClass: longhorn
