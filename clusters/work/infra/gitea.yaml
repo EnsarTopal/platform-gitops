@@ -22,7 +22,7 @@ spec:
         image:
           registry: harbor.lab.local
           repository: library/gitea
-          tag: 1.25.4-rootless
+          tag: 1.25.4
           rootless: true
         gitea:
           admin:
