@@ -14,6 +14,15 @@ spec:
     path: clusters/work/infra/config/tekton
     directory:
       include: "pipelines.yaml"
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /spec/preserveUnknownFields
+        - /spec/conversion
+        - /status
+        - /spec/names/singular
+        - /spec/names/listKind
   syncPolicy:
     automated:
       prune: true
