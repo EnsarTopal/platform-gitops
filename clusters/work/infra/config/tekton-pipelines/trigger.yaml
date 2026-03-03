@@ -13,6 +13,10 @@ spec:
       params:
       - name: filter
         value: "header.match('X-Gitea-Event', 'push')"
+      - name: overlays
+        value:
+        - key: short_sha
+          expression: "body.after.substring(0, 7)"
     bindings:
     - ref: demo-nginx-binding
     template:
@@ -30,7 +34,7 @@ spec:
   - name: revision
     value: $(body.after)
   - name: image-tag
-    value: $(body.after[0:7])
+    value: $(extensions.short_sha)
 ---
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerTemplate

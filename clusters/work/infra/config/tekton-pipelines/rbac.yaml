@@ -20,16 +20,31 @@ rules:
 - apiGroups: [""]
   resources: ["secrets", "configmaps", "serviceaccounts"]
   verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
 - apiGroups: ["tekton.dev"]
   resources: ["tasks", "taskruns", "pipelines", "pipelineruns"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["triggers.tekton.dev"]
-  resources: ["triggertemplates", "triggerbindings", "clustertriggerbindings",
-              "eventlisteners", "triggers", "interceptors", "clusterinterceptors"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: [""]
-  resources: ["events"]
-  verbs: ["create", "patch"]
-- apiGroups: [""]
-  resources: ["persistentvolumeclaims"]
+  resources: ["triggertemplates", "triggerbindings", "eventlisteners", "triggers", "interceptors"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["triggers.tekton.dev"]
+  resources: ["clustertriggerbindings", "clusterinterceptors"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tekton-pipeline-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-pipeline-role
+subjects:
+- kind: ServiceAccount
+  name: tekton-pipeline-sa
+  namespace: tekton-ci
