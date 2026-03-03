@@ -8,6 +8,9 @@ kind: ServiceAccount
 metadata:
   name: tekton-pipeline-sa
   namespace: tekton-ci
+secrets:
+  - name: gitea-credentials
+  - name: harbor-credentials
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -27,16 +30,6 @@ rules:
 - apiGroups: [""]
   resources: ["events"]
   verbs: ["create", "patch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: tekton-pipeline-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: tekton-pipeline-role
-subjects:
-- kind: ServiceAccount
-  name: tekton-pipeline-sa
-  namespace: tekton-ci
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
