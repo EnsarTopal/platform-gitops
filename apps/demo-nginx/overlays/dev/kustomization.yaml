@@ -37,4 +37,4 @@ patches:
         value: nginx-html-dev
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: harbor.lab.local/library/nginx-unprivileged:1.27
+        value: harbor.lab.local/library/nginx-unprivileged:b33b27d
