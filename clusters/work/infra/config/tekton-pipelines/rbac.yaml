@@ -11,6 +11,8 @@ metadata:
 secrets:
   - name: gitea-credentials
   - name: harbor-credentials
+imagePullSecrets:
+  - name: harbor-credentials
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
