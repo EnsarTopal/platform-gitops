@@ -57,6 +57,11 @@ spec:
         name: demo-nginx-pipeline
       taskRunTemplate:
         serviceAccountName: tekton-pipeline-sa
+        podTemplate:
+          securityContext:
+            fsGroup: 1000
+            runAsUser: 1000
+            runAsNonRoot: true
       params:
       - name: repo-url
         value: $(tt.params.repo-url)
