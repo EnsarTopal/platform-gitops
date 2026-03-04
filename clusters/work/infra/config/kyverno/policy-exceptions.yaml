@@ -1,5 +1,37 @@
+# ── Sistem Namespace'leri — Resource Limits Exception ────────
+# Bu namespace'lerdeki bileşenler vendor tarafından yönetiliyor,
+# resource limits upstream chart'lara bırakılmış.
+# demo namespace'i kasıtlı olarak hariç tutuldu (uygulama kodu).
+apiVersion: kyverno.io/v2beta1
+kind: PolicyException
+metadata:
+  name: system-namespaces-resource-limits
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
+  match:
+    any:
+    - resources:
+        kinds: ["Pod", "Deployment", "StatefulSet", "DaemonSet", "ReplicaSet"]
+        namespaces:
+          - argocd
+          - argo-rollouts
+          - cert-manager
+          - external-secrets
+          - gitea
+          - harbor
+          - ingress-nginx
+          - kyverno
+          - metallb-system
+          - monitoring
+          - tekton-pipelines
+          - tekton-pipelines-resolvers
+          - tekton-ci
+          - longhorn-system
+---
 # ── MetalLB Speaker ─────────────────────────────────────────
-# Host network + host PID gerektiriyor, root olarak çalışıyor
 apiVersion: kyverno.io/v2beta1
 kind: PolicyException
 metadata:
@@ -11,8 +43,6 @@ spec:
     ruleNames: ["host-namespaces", "autogen-host-namespaces"]
   - policyName: disallow-root-user
     ruleNames: ["check-root-user", "autogen-check-root-user"]
-  - policyName: require-resource-limits
-    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
   match:
     any:
     - resources:
@@ -21,7 +51,6 @@ spec:
         names: ["metallb-speaker*"]
 ---
 # ── Prometheus Node Exporter ─────────────────────────────────
-# Host network + hostPID gerektiriyor (node metrics toplamak için)
 apiVersion: kyverno.io/v2beta1
 kind: PolicyException
 metadata:
@@ -31,8 +60,6 @@ spec:
   exceptions:
   - policyName: disallow-host-namespaces
     ruleNames: ["host-namespaces", "autogen-host-namespaces"]
-  - policyName: require-resource-limits
-    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
   match:
     any:
     - resources:
@@ -40,25 +67,7 @@ spec:
         namespaces: ["monitoring"]
         names: ["monitoring-prometheus-node-exporter*"]
 ---
-# ── Kyverno Kendi Pod'ları ───────────────────────────────────
-# Kyverno bileşenleri resource limits olmadan deploy ediliyor
-apiVersion: kyverno.io/v2beta1
-kind: PolicyException
-metadata:
-  name: kyverno-exception
-  namespace: kyverno
-spec:
-  exceptions:
-  - policyName: require-resource-limits
-    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
-  match:
-    any:
-    - resources:
-        kinds: ["Pod", "Deployment"]
-        namespaces: ["kyverno"]
----
 # ── Harbor ──────────────────────────────────────────────────
-# Harbor bazı bileşenler root + privilege escalation gerektiriyor
 apiVersion: kyverno.io/v2beta1
 kind: PolicyException
 metadata:
@@ -70,27 +79,49 @@ spec:
     ruleNames: ["check-privilege-escalation", "autogen-check-privilege-escalation"]
   - policyName: disallow-root-user
     ruleNames: ["check-root-user", "autogen-check-root-user"]
-  - policyName: require-resource-limits
-    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
   match:
     any:
     - resources:
         kinds: ["Pod", "Deployment", "StatefulSet"]
         namespaces: ["harbor"]
 ---
-# ── Tekton Triggers ─────────────────────────────────────────
+# ── Argo Rollouts Dashboard ──────────────────────────────────
 apiVersion: kyverno.io/v2beta1
 kind: PolicyException
 metadata:
-  name: tekton-triggers-exception
-  namespace: tekton-pipelines
+  name: argo-rollouts-exception
+  namespace: argo-rollouts
 spec:
   exceptions:
-  - policyName: require-resource-limits
-    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
+  - policyName: disallow-root-user
+    ruleNames: ["check-root-user", "autogen-check-root-user"]
+  - policyName: disallow-privilege-escalation
+    ruleNames: ["check-privilege-escalation", "autogen-check-privilege-escalation"]
   match:
     any:
     - resources:
         kinds: ["Pod", "Deployment"]
-        namespaces: ["tekton-pipelines", "tekton-pipelines-resolvers"]
-        names: ["tekton-triggers*", "tekton-pipelines-remote-resolvers*"]
+        namespaces: ["argo-rollouts"]
+        names: ["rollouts-argo-rollouts-dashboard*"]
+---
+# ── ArgoCD, External Secrets, Gitea ─────────────────────────
+apiVersion: kyverno.io/v2beta1
+kind: PolicyException
+metadata:
+  name: system-components-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: disallow-root-user
+    ruleNames: ["check-root-user", "autogen-check-root-user"]
+  - policyName: disallow-privilege-escalation
+    ruleNames: ["check-privilege-escalation", "autogen-check-privilege-escalation"]
+  match:
+    any:
+    - resources:
+        kinds: ["Pod", "Deployment", "StatefulSet"]
+        namespaces:
+          - argocd
+          - external-secrets
+          - gitea
+          - monitoring
