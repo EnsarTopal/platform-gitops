@@ -1,4 +1,5 @@
 resources:
+  - metrics-server.yaml
   - tekton-pipelines.yaml
   - tekton.yaml
   - gitea.yaml
