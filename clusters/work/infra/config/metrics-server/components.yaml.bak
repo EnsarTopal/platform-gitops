@@ -120,7 +120,6 @@ metadata:
   name: metrics-server
   namespace: kube-system
 spec:
-  replicas: 2
   selector:
     matchLabels:
       k8s-app: metrics-server
@@ -166,9 +165,6 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
-          limits:
-            cpu: 250m
-            memory: 400Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -186,53 +182,9 @@ spec:
         kubernetes.io/os: linux
       priorityClassName: system-cluster-critical
       serviceAccountName: metrics-server
-      topologySpreadConstraints:
-      - maxSkew: 1
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: DoNotSchedule
-        labelSelector:
-          matchLabels:
-            k8s-app: metrics-server
       volumes:
       - emptyDir: {}
         name: tmp-dir
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: metrics-server-pdb
-  namespace: kube-system
-  labels:
-    k8s-app: metrics-server
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      k8s-app: metrics-server
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: metrics-server
-  namespace: kube-system
-  labels:
-    k8s-app: metrics-server
-    release: monitoring        # kube-prometheus-stack discovery label'ı
-spec:
-  selector:
-    matchLabels:
-      k8s-app: metrics-server
-  namespaceSelector:
-    matchNames:
-    - kube-system
-  endpoints:
-  - port: https
-    scheme: https
-    tlsConfig:
-      insecureSkipVerify: true  # self-signed cert
-    bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
-    interval: 30s
-    honorLabels: true
 ---
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
