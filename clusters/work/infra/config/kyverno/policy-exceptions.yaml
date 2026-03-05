@@ -1,127 +1,165 @@
-# ── Sistem Namespace'leri — Resource Limits Exception ────────
-# Bu namespace'lerdeki bileşenler vendor tarafından yönetiliyor,
-# resource limits upstream chart'lara bırakılmış.
-# demo namespace'i kasıtlı olarak hariç tutuldu (uygulama kodu).
-apiVersion: kyverno.io/v2beta1
-kind: PolicyException
-metadata:
-  name: system-namespaces-resource-limits
-  namespace: kyverno
-spec:
-  exceptions:
-  - policyName: require-resource-limits
-    ruleNames: ["check-resource-limits", "autogen-check-resource-limits"]
-  match:
-    any:
-    - resources:
-        kinds: ["Pod", "Deployment", "StatefulSet", "DaemonSet", "ReplicaSet"]
-        namespaces:
-          - argocd
-          - argo-rollouts
-          - cert-manager
-          - external-secrets
-          - gitea
-          - harbor
-          - ingress-nginx
-          - kyverno
-          - metallb-system
-          - monitoring
-          - tekton-pipelines
-          - tekton-pipelines-resolvers
-          - tekton-ci
-          - longhorn-system
----
-# ── MetalLB Speaker ─────────────────────────────────────────
-apiVersion: kyverno.io/v2beta1
-kind: PolicyException
-metadata:
-  name: metallb-speaker-exception
-  namespace: metallb-system
-spec:
-  exceptions:
-  - policyName: disallow-host-namespaces
-    ruleNames: ["host-namespaces", "autogen-host-namespaces"]
-  - policyName: disallow-root-user
-    ruleNames: ["check-root-user", "autogen-check-root-user"]
-  match:
-    any:
-    - resources:
-        kinds: ["Pod", "DaemonSet"]
-        namespaces: ["metallb-system"]
-        names: ["metallb-speaker*"]
----
-# ── Prometheus Node Exporter ─────────────────────────────────
-apiVersion: kyverno.io/v2beta1
-kind: PolicyException
-metadata:
-  name: node-exporter-exception
-  namespace: monitoring
-spec:
-  exceptions:
-  - policyName: disallow-host-namespaces
-    ruleNames: ["host-namespaces", "autogen-host-namespaces"]
-  match:
-    any:
-    - resources:
-        kinds: ["Pod", "DaemonSet"]
-        namespaces: ["monitoring"]
-        names: ["monitoring-prometheus-node-exporter*"]
----
-# ── Harbor ──────────────────────────────────────────────────
-apiVersion: kyverno.io/v2beta1
-kind: PolicyException
-metadata:
-  name: harbor-exception
-  namespace: harbor
-spec:
-  exceptions:
-  - policyName: disallow-privilege-escalation
-    ruleNames: ["check-privilege-escalation", "autogen-check-privilege-escalation"]
-  - policyName: disallow-root-user
-    ruleNames: ["check-root-user", "autogen-check-root-user"]
-  match:
-    any:
-    - resources:
-        kinds: ["Pod", "Deployment", "StatefulSet"]
-        namespaces: ["harbor"]
----
-# ── Argo Rollouts Dashboard ──────────────────────────────────
-apiVersion: kyverno.io/v2beta1
-kind: PolicyException
-metadata:
-  name: argo-rollouts-exception
-  namespace: argo-rollouts
-spec:
-  exceptions:
-  - policyName: disallow-root-user
-    ruleNames: ["check-root-user", "autogen-check-root-user"]
-  - policyName: disallow-privilege-escalation
-    ruleNames: ["check-privilege-escalation", "autogen-check-privilege-escalation"]
-  match:
-    any:
-    - resources:
-        kinds: ["Pod", "Deployment"]
-        namespaces: ["argo-rollouts"]
-        names: ["rollouts-argo-rollouts-dashboard*"]
----
-# ── ArgoCD, External Secrets, Gitea ─────────────────────────
-apiVersion: kyverno.io/v2beta1
+# PolicyException — sistem componentleri için zorunlu istisnalar
+apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
   name: system-components-exception
   namespace: kyverno
 spec:
   exceptions:
+  # Kyverno kendi pod'ları için
   - policyName: disallow-root-user
-    ruleNames: ["check-root-user", "autogen-check-root-user"]
-  - policyName: disallow-privilege-escalation
-    ruleNames: ["check-privilege-escalation", "autogen-check-privilege-escalation"]
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
   match:
     any:
     - resources:
-        kinds: ["Pod", "Deployment", "StatefulSet"]
         namespaces:
-          - argocd
-          - external-secrets
-          - gitea
-          - monitoring
+        - kyverno
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+---
+# MetalLB speaker — host network ve privilege gerektirir
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: metallb-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: disallow-host-namespaces
+    ruleNames:
+    - host-namespaces
+    - autogen-host-namespaces
+  - policyName: disallow-privilege-escalation
+    ruleNames:
+    - check-privilege-escalation
+    - autogen-check-privilege-escalation
+  - policyName: disallow-privileged-containers
+    ruleNames:
+    - check-privileged-containers
+    - autogen-check-privileged-containers
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  match:
+    any:
+    - resources:
+        namespaces:
+        - metallb-system
+        kinds:
+        - Pod
+        - DaemonSet
+        - ReplicaSet
+---
+# MinIO — writable rootfs gerektirir (vendor limitation)
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: minio-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-read-only-rootfs
+    ruleNames:
+    - check-read-only-rootfs
+    - autogen-check-read-only-rootfs
+  match:
+    any:
+    - resources:
+        namespaces:
+        - minio
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+---
+# etcd-backup — hostPath ve root erişimi gerektirir
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: etcd-backup-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  - policyName: disallow-host-namespaces
+    ruleNames:
+    - host-namespaces
+    - autogen-host-namespaces
+  match:
+    any:
+    - resources:
+        namespaces:
+        - kube-system
+        names:
+        - etcd-backup-*
+        kinds:
+        - Pod
+        - Job
+---
+# Monitoring stack — read-only rootfs uyumsuz componentler
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: monitoring-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-read-only-rootfs
+    ruleNames:
+    - check-read-only-rootfs
+    - autogen-check-read-only-rootfs
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  match:
+    any:
+    - resources:
+        namespaces:
+        - monitoring
+        kinds:
+        - Pod
+        - Deployment
+        - StatefulSet
+        - DaemonSet
+        - ReplicaSet
+---
+# Tekton — pipeline runner pod'ları çeşitli privilege gerektirebilir
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: tekton-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-read-only-rootfs
+    ruleNames:
+    - check-read-only-rootfs
+    - autogen-check-read-only-rootfs
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  match:
+    any:
+    - resources:
+        namespaces:
+        - tekton-pipelines
+        - tekton-pipelines-resolvers
+        - tekton-ci
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
