@@ -6,3 +6,4 @@ resources:
   - ingress.yaml
   - configmap.yaml
   - analysis-template.yaml
+  - harbor-regcred-externalsecret.yaml
