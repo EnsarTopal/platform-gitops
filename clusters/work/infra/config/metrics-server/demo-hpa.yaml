@@ -7,8 +7,8 @@ metadata:
     app: nginx-dev
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1   # ← Deployment değil Rollout
+    kind: Rollout
     name: nginx-dev
   minReplicas: 2
   maxReplicas: 5
