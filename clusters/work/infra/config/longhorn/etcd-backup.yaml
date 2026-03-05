@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: etcd-backup
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: etcd-backup
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/exec"]
+  verbs: ["get", "list", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: etcd-backup
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: etcd-backup
+subjects:
+- kind: ServiceAccount
+  name: etcd-backup
+  namespace: kube-system
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-backup
+  namespace: kube-system
+spec:
+  schedule: "0 1 * * *"    # her gece 01:00
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: etcd-backup
+          restartPolicy: OnFailure
+          hostNetwork: true
+          nodeName: k8s-cp1         # etcd sadece cp1'de
+          containers:
+          - name: etcd-backup
+            image: harbor.lab.local/proxy/bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              BACKUP_DIR="/var/lib/etcd-backup"
+              DATE=$(date +%Y%m%d-%H%M%S)
+              mkdir -p $BACKUP_DIR
+
+              # etcd snapshot al
+              ETCDCTL_API=3 etcdctl \
+                --endpoints=https://127.0.0.1:2379 \
+                --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                --cert=/etc/kubernetes/pki/etcd/server.crt \
+                --key=/etc/kubernetes/pki/etcd/server.key \
+                snapshot save $BACKUP_DIR/etcd-$DATE.db
+
+              # Verify
+              ETCDCTL_API=3 etcdctl \
+                snapshot status $BACKUP_DIR/etcd-$DATE.db
+
+              # 7 günden eski snapshot'ları sil
+              find $BACKUP_DIR -name "etcd-*.db" -mtime +7 -delete
+
+              echo "Backup completed: etcd-$DATE.db"
+            volumeMounts:
+            - name: etcd-pki
+              mountPath: /etc/kubernetes/pki/etcd
+              readOnly: true
+            - name: backup-dir
+              mountPath: /var/lib/etcd-backup
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: false   # etcd cert'e erişim için
+          volumes:
+          - name: etcd-pki
+            hostPath:
+              path: /etc/kubernetes/pki/etcd
+              type: Directory
+          - name: backup-dir
+            hostPath:
+              path: /var/lib/etcd-backup
+              type: DirectoryOrCreate
