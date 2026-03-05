@@ -18,3 +18,5 @@ resources:
   - harbor.yaml
   - kyverno.yaml
   - kyverno-config.yaml
+  - minio.yaml
+  - longhorn-config.yaml
