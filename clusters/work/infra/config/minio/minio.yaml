@@ -43,7 +43,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: minio
-        image: harbor.lab.local/proxy/minio/minio:RELEASE.2024-01-01T00-00-00Z
+        image: harbor.lab.local/proxy-dockerhub/minio/minio:RELEASE.2025-07-23T15-54-02Z
         args:
         - server
         - /data
@@ -89,14 +89,22 @@ spec:
           capabilities:
             drop:
             - ALL
-          readOnlyRootFilesystem: false   # minio tmp yazıyor
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - name: data
           mountPath: /data
+        - name: tmp
+          mountPath: /tmp
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: minio-data
+      - name: tmp
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -124,7 +132,6 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec:
   ingressClassName: nginx
   tls:
