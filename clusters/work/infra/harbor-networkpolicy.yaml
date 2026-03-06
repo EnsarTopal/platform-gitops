@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-harbor-networkpolicy
+  namespace: argocd
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/EnsarTopal/platform-gitops.git
+    targetRevision: HEAD
+    path: clusters/work/infra/config/harbor-networkpolicy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

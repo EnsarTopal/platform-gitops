@@ -16,6 +16,7 @@ resources:
   - external-secrets-config.yaml
   - longhorn.yaml
   - harbor.yaml
+  - harbor-networkpolicy.yaml
   - kyverno.yaml
   - kyverno-config.yaml
   - minio.yaml
