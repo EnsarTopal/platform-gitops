@@ -157,7 +157,7 @@ spec:
         - StatefulSet
         - ReplicaSet
 ---
-# argo-rollouts — quay.io image, Harbor proxy kurulana kadar
+# argo-rollouts — quay.io image + privilege-escalation + root user
 apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
@@ -173,6 +173,14 @@ spec:
     ruleNames:
     - check-resource-limits
     - autogen-check-resource-limits
+  - policyName: disallow-privilege-escalation
+    ruleNames:
+    - check-privilege-escalation
+    - autogen-check-privilege-escalation
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
   match:
     any:
     - resources:
@@ -183,7 +191,7 @@ spec:
         - Deployment
         - ReplicaSet
 ---
-# argocd — quay.io image, Harbor proxy kurulana kadar
+# argocd — quay.io image
 apiVersion: kyverno.io/v2
 kind: PolicyException
 metadata:
@@ -209,3 +217,197 @@ spec:
         - Deployment
         - ReplicaSet
         - StatefulSet
+---
+# metallb-system — speaker hostNetwork+hostPID zorunlu
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: metallb-system-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: disallow-host-namespaces
+    ruleNames:
+    - host-namespaces
+    - autogen-host-namespaces
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  - policyName: disallow-privilege-escalation
+    ruleNames:
+    - check-privilege-escalation
+    - autogen-check-privilege-escalation
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  - policyName: require-image-registry
+    ruleNames:
+    - check-image-registry
+    - autogen-check-image-registry
+  match:
+    any:
+    - resources:
+        namespaces:
+        - metallb-system
+        kinds:
+        - Pod
+        - DaemonSet
+        - Deployment
+        - ReplicaSet
+---
+# harbor — database/registry root user, privilege-escalation
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: harbor-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: disallow-root-user
+    ruleNames:
+    - check-root-user
+    - autogen-check-root-user
+  - policyName: disallow-privilege-escalation
+    ruleNames:
+    - check-privilege-escalation
+    - autogen-check-privilege-escalation
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  match:
+    any:
+    - resources:
+        namespaces:
+        - harbor
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+        - StatefulSet
+---
+# external-secrets — resource limits eksik
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: external-secrets-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  match:
+    any:
+    - resources:
+        namespaces:
+        - external-secrets
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+---
+# kyverno — kendi controller'ları resource limits
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: kyverno-system-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  match:
+    any:
+    - resources:
+        namespaces:
+        - kyverno
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+---
+# ingress-nginx — resource limits
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: ingress-nginx-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  match:
+    any:
+    - resources:
+        namespaces:
+        - ingress-nginx
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+---
+# tekton-pipelines — probes eksik
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: tekton-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-probes
+    ruleNames:
+    - check-probes
+    - autogen-check-probes
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  - policyName: require-image-registry
+    ruleNames:
+    - check-image-registry
+    - autogen-check-image-registry
+  match:
+    any:
+    - resources:
+        namespaces:
+        - tekton-pipelines
+        - tekton-pipelines-resolvers
+        - tekton-ci
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
+---
+# minio — read-only rootfs uyumsuz
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: minio-exception
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-read-only-rootfs
+    ruleNames:
+    - check-read-only-rootfs
+    - autogen-check-read-only-rootfs
+  - policyName: require-resource-limits
+    ruleNames:
+    - check-resource-limits
+    - autogen-check-resource-limits
+  match:
+    any:
+    - resources:
+        namespaces:
+        - minio
+        kinds:
+        - Pod
+        - Deployment
+        - ReplicaSet
