@@ -210,6 +210,14 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+    - to:
+        - ipBlock:
+            cidr: 10.25.25.14/32
+        - ipBlock:
+            cidr: 10.25.25.18/32
+      ports:
+        - protocol: TCP
+          port: 6443
   policyTypes:
     - Egress
 ---
