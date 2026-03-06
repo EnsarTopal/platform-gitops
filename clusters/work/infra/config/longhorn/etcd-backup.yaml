@@ -38,6 +38,7 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      backoffLimit: 1
       template:
         spec:
           serviceAccountName: etcd-backup
@@ -53,27 +54,20 @@ spec:
             - -c
             - |
               set -e
-
-              BACKUP_DIR="/var/lib/etcd-backup"
-              DATE=$(date +%Y%m%d-%H%M%S)
-              SNAPSHOT_FILE="$BACKUP_DIR/etcd-$DATE.db"
-
-              mkdir -p "$BACKUP_DIR"
+              SNAPSHOT_FILE="/var/lib/etcd-backup/etcd-snapshot.db"
 
               ETCDCTL_API=3 etcdctl \
                 --endpoints=https://127.0.0.1:2379 \
                 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
                 --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
                 --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
-                snapshot save "$SNAPSHOT_FILE"
+                snapshot save "${SNAPSHOT_FILE}"
 
               ETCDCTL_API=3 etcdctl \
                 --write-out=table \
-                snapshot status "$SNAPSHOT_FILE"
+                snapshot status "${SNAPSHOT_FILE}"
 
-              find "$BACKUP_DIR" -name "etcd-*.db" -mtime +7 -delete
-
-              echo "Backup completed: $(basename "$SNAPSHOT_FILE")"
+              echo "Backup completed: ${SNAPSHOT_FILE}"
             volumeMounts:
             - name: kubernetes-pki
               mountPath: /etc/kubernetes/pki
