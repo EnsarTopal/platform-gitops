@@ -22,8 +22,8 @@ spec:
           ingress:
             hosts:
               core: harbor.lab.local
+            className: nginx
             annotations:
-              kubernetes.io/ingress.class: nginx
               cert-manager.io/cluster-issuer: lab-ca-issuer
               nginx.ingress.kubernetes.io/ssl-redirect: "true"
               nginx.ingress.kubernetes.io/proxy-body-size: "0"
@@ -100,7 +100,6 @@ spec:
               memory: 128Mi
         database:
           internal:
-            # harbor chart 1.14.x postgresql icin bu path kullaniliyor
             podSecurityContext:
               runAsNonRoot: true
             containerSecurityContext:
