@@ -46,31 +46,37 @@ spec:
           nodeName: k8s-cp1
           containers:
           - name: etcd-backup
-            image: harbor.lab.local/proxy-dockerhub/bitnami/etcd:3.5.17
+            image: registry.k8s.io/etcd:3.5.17-0
+            imagePullPolicy: IfNotPresent
             command:
             - /bin/sh
             - -c
             - |
+              set -e
+
               BACKUP_DIR="/var/lib/etcd-backup"
               DATE=$(date +%Y%m%d-%H%M%S)
-              mkdir -p $BACKUP_DIR
+              SNAPSHOT_FILE="$BACKUP_DIR/etcd-$DATE.db"
+
+              mkdir -p "$BACKUP_DIR"
 
               ETCDCTL_API=3 etcdctl \
                 --endpoints=https://127.0.0.1:2379 \
                 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
-                --cert=/etc/kubernetes/pki/etcd/server.crt \
-                --key=/etc/kubernetes/pki/etcd/server.key \
-                snapshot save $BACKUP_DIR/etcd-$DATE.db
+                --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+                --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
+                snapshot save "$SNAPSHOT_FILE"
 
               ETCDCTL_API=3 etcdctl \
-                snapshot status $BACKUP_DIR/etcd-$DATE.db
+                --write-out=table \
+                snapshot status "$SNAPSHOT_FILE"
 
-              find $BACKUP_DIR -name "etcd-*.db" -mtime +7 -delete
+              find "$BACKUP_DIR" -name "etcd-*.db" -mtime +7 -delete
 
-              echo "Backup completed: etcd-$DATE.db"
+              echo "Backup completed: $(basename "$SNAPSHOT_FILE")"
             volumeMounts:
-            - name: etcd-pki
-              mountPath: /etc/kubernetes/pki/etcd
+            - name: kubernetes-pki
+              mountPath: /etc/kubernetes/pki
               readOnly: true
             - name: backup-dir
               mountPath: /var/lib/etcd-backup
@@ -88,9 +94,9 @@ spec:
                 - ALL
               runAsNonRoot: false
           volumes:
-          - name: etcd-pki
+          - name: kubernetes-pki
             hostPath:
-              path: /etc/kubernetes/pki/etcd
+              path: /etc/kubernetes/pki
               type: Directory
           - name: backup-dir
             hostPath:
