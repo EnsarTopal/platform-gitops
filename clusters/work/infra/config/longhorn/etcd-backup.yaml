@@ -32,7 +32,7 @@ metadata:
   name: etcd-backup
   namespace: kube-system
 spec:
-  schedule: "0 1 * * *"    # her gece 01:00
+  schedule: "0 1 * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -43,10 +43,10 @@ spec:
           serviceAccountName: etcd-backup
           restartPolicy: OnFailure
           hostNetwork: true
-          nodeName: k8s-cp1         # etcd sadece cp1'de
+          nodeName: k8s-cp1
           containers:
           - name: etcd-backup
-            image: harbor.lab.local/proxy/bitnami/kubectl:latest
+            image: harbor.lab.local/proxy-dockerhub/bitnami/etcd:3.5.17
             command:
             - /bin/sh
             - -c
@@ -55,7 +55,6 @@ spec:
               DATE=$(date +%Y%m%d-%H%M%S)
               mkdir -p $BACKUP_DIR
 
-              # etcd snapshot al
               ETCDCTL_API=3 etcdctl \
                 --endpoints=https://127.0.0.1:2379 \
                 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
@@ -63,11 +62,9 @@ spec:
                 --key=/etc/kubernetes/pki/etcd/server.key \
                 snapshot save $BACKUP_DIR/etcd-$DATE.db
 
-              # Verify
               ETCDCTL_API=3 etcdctl \
                 snapshot status $BACKUP_DIR/etcd-$DATE.db
 
-              # 7 günden eski snapshot'ları sil
               find $BACKUP_DIR -name "etcd-*.db" -mtime +7 -delete
 
               echo "Backup completed: etcd-$DATE.db"
@@ -89,7 +86,7 @@ spec:
               capabilities:
                 drop:
                 - ALL
-              runAsNonRoot: false   # etcd cert'e erişim için
+              runAsNonRoot: false
           volumes:
           - name: etcd-pki
             hostPath:
