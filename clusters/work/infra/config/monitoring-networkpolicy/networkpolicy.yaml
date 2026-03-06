@@ -236,3 +236,28 @@ spec:
           port: 443
   policyTypes:
     - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monitoring-allow-controlplane-metrics-egress
+  namespace: monitoring
+spec:
+  podSelector:
+    matchLabels:
+      prometheus: monitoring-kube-prometheus-prometheus
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.25.25.14/32
+        - ipBlock:
+            cidr: 10.25.25.18/32
+      ports:
+        - protocol: TCP
+          port: 10257
+        - protocol: TCP
+          port: 10259
+        - protocol: TCP
+          port: 2381
+  policyTypes:
+    - Egress
