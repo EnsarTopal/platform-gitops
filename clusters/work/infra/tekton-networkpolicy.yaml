@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-tekton-networkpolicy
+  namespace: argocd
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/EnsarTopal/platform-gitops.git
+    targetRevision: HEAD
+    path: clusters/work/infra/config/tekton-networkpolicy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tekton-pipelines
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -2,6 +2,7 @@ resources:
   - metrics-server.yaml
   - tekton-pipelines.yaml
   - tekton.yaml
+  - tekton-networkpolicy.yaml
   - gitea.yaml
   - rollouts.yaml
   - loki.yaml
