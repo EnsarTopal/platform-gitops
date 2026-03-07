@@ -3428,6 +3428,10 @@ spec:
                     operator: NotIn
                     values:
                       - windows
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - k8s-w3
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - podAffinityTerm:
