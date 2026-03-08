@@ -59,6 +59,7 @@ spec:
             - longhorn-system
             - monitoring
             - harbor
+            - ingress-nginx
             - cert-manager
             - external-secrets
             - argo-rollouts

@@ -62,6 +62,10 @@ spec:
             cidr: 10.25.25.14/32
         - ipBlock:
             cidr: 10.25.25.18/32
+        - ipBlock:
+            cidr: 192.168.71.64/32
+        - ipBlock:
+            cidr: 192.168.64.128/32
       ports:
         - protocol: TCP
           port: 443
@@ -87,6 +91,10 @@ spec:
             cidr: 10.25.25.14/32
         - ipBlock:
             cidr: 10.25.25.18/32
+        - ipBlock:
+            cidr: 192.168.71.64/32
+        - ipBlock:
+            cidr: 192.168.64.128/32
       ports:
         - protocol: TCP
           port: 8443
