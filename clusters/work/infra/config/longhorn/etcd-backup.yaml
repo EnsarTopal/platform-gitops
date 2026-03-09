@@ -26,6 +26,18 @@ subjects:
   name: etcd-backup
   namespace: kube-system
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: etcd-backup-minio
+  namespace: kube-system
+type: Opaque
+stringData:
+  MINIO_ENDPOINT: "http://10.102.153.61:9000"
+  MINIO_ACCESS_KEY: "minioadmin"
+  MINIO_SECRET_KEY: "WV60H6Mk5xQQeUhTV3BPK6Ok"
+  MINIO_BUCKET: "longhorn-backup"
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -44,9 +56,10 @@ spec:
           serviceAccountName: etcd-backup
           restartPolicy: OnFailure
           hostNetwork: true
+          dnsPolicy: ClusterFirstWithHostNet
           nodeName: k8s-cp1
-          containers:
-          - name: etcd-backup
+          initContainers:
+          - name: etcd-snapshot
             image: registry.k8s.io/etcd:3.5.17-0
             imagePullPolicy: IfNotPresent
             command:
@@ -55,19 +68,16 @@ spec:
             - |
               set -e
               SNAPSHOT_FILE="/var/lib/etcd-backup/etcd-snapshot.db"
-
               ETCDCTL_API=3 etcdctl \
                 --endpoints=https://127.0.0.1:2379 \
                 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
                 --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
                 --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
                 snapshot save "${SNAPSHOT_FILE}"
-
               ETCDCTL_API=3 etcdctl \
                 --write-out=table \
                 snapshot status "${SNAPSHOT_FILE}"
-
-              echo "Backup completed: ${SNAPSHOT_FILE}"
+              echo "Snapshot saved: ${SNAPSHOT_FILE}"
             volumeMounts:
             - name: kubernetes-pki
               mountPath: /etc/kubernetes/pki
@@ -83,9 +93,48 @@ spec:
                 memory: 256Mi
             securityContext:
               allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                - ALL
+              runAsNonRoot: false
+          containers:
+          - name: minio-upload
+            image: harbor.lab.local/proxy-dockerhub/minio/mc:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+              DEST_FILE="etcd-backups/etcd-snapshot-${TIMESTAMP}.db"
+
+              echo "Configuring mc..."
+              mc alias set local "${MINIO_ENDPOINT}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}" --api S3v4
+
+              echo "Uploading to MinIO: ${DEST_FILE}"
+              mc cp /var/lib/etcd-backup/etcd-snapshot.db "local/${MINIO_BUCKET}/${DEST_FILE}"
+              echo "Upload completed: ${DEST_FILE}"
+
+              echo "Keeping last 7 backups, removing older ones..."
+              mc ls "local/${MINIO_BUCKET}/etcd-backups/" | sort | head -n -7 | \
+                awk '{print $NF}' | \
+                xargs -I{} mc rm "local/${MINIO_BUCKET}/etcd-backups/{}" || true
+
+              echo "Current backups:"
+              mc ls "local/${MINIO_BUCKET}/etcd-backups/"
+            envFrom:
+            - secretRef:
+                name: etcd-backup-minio
+            volumeMounts:
+            - name: backup-dir
+              mountPath: /var/lib/etcd-backup
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 100m
+                memory: 128Mi
+            securityContext:
+              allowPrivilegeEscalation: false
               runAsNonRoot: false
           volumes:
           - name: kubernetes-pki
