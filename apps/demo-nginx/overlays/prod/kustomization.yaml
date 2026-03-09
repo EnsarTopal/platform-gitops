@@ -18,3 +18,23 @@ patches:
       - op: replace
         path: /spec/tls/0/secretName
         value: nginx-prod-tls
+  - target:
+      kind: ExternalSecret
+      name: harbor-regcred
+    patch: |-
+      - op: replace
+        path: /spec/target/name
+        value: harbor-regcred-prod
+  - target:
+      kind: Rollout
+      name: nginx
+    patch: |-
+      - op: replace
+        path: /spec/strategy/canary/stableService
+        value: nginx-prod
+      - op: replace
+        path: /spec/strategy/canary/canaryService
+        value: nginx-canary-prod
+      - op: replace
+        path: /spec/strategy/canary/trafficRouting/nginx/stableIngress
+        value: nginx-prod
