@@ -182,3 +182,23 @@ spec:
           protocol: TCP
         - port: 80
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: longhorn-allow-kube-system-minio-egress
+  namespace: kube-system
+spec:
+  podSelector:
+    matchLabels:
+      app: etcd-backup
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: minio
+      ports:
+        - port: 9000
+          protocol: TCP
