@@ -1,9 +1,12 @@
 resources:
   - ../../base
 nameSuffix: -prod
-commonLabels:
-  env: prod
-  team: devops
+labels:
+  - pairs:
+      env: prod
+      team: devops
+    includeSelectors: false
+    includeTemplates: false
 patches:
   - target:
       kind: Ingress
