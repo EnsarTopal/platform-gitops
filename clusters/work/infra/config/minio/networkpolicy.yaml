@@ -64,3 +64,23 @@ spec:
           port: 9001
   policyTypes:
     - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: minio-allow-from-longhorn
+  namespace: minio
+spec:
+  podSelector:
+    matchLabels:
+      app: minio
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: longhorn-system
+      ports:
+        - port: 9000
+          protocol: TCP
