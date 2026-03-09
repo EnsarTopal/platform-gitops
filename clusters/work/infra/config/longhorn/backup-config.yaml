@@ -21,7 +21,8 @@ spec:
   name: daily-snapshot
   cron: "0 2 * * *"
   task: snapshot
-  groups: []
+  groups:
+    - default
   retain: 7
   concurrency: 2
   labels:
@@ -36,7 +37,8 @@ spec:
   name: daily-backup
   cron: "0 3 * * *"
   task: backup
-  groups: []
+  groups:
+    - default
   retain: 14
   concurrency: 2
   labels:
@@ -51,7 +53,8 @@ spec:
   name: weekly-backup
   cron: "0 4 * * 0"
   task: backup
-  groups: []
+  groups:
+    - default
   retain: 4
   concurrency: 1
   labels:
