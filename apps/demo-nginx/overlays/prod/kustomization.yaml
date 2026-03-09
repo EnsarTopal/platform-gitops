@@ -38,3 +38,6 @@ patches:
       - op: replace
         path: /spec/strategy/canary/trafficRouting/nginx/stableIngress
         value: nginx-prod
+      - op: replace
+        path: /spec/strategy/canary/steps/1/analysis/templates/0/templateName
+        value: nginx-error-rate-prod
