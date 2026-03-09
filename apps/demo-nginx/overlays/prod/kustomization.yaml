@@ -1,13 +1,9 @@
 resources:
   - ../../base
-
 nameSuffix: -prod
-
-# Prod için ekstra sıkılaştırma ve etiketleme
 commonLabels:
   env: prod
   team: devops
-
 patches:
   - target:
       kind: Ingress
@@ -19,3 +15,6 @@ patches:
       - op: replace
         path: /spec/tls/0/hosts/0
         value: demo-nginx-prod.lab.local
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: nginx-prod-tls
