@@ -104,3 +104,26 @@ spec:
       ports:
         - port: 9000
           protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: minio-allow-from-nodes
+  namespace: minio
+spec:
+  podSelector:
+    matchLabels:
+      app: minio
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.25.25.0/24
+        - ipBlock:
+            cidr: 192.168.71.64/32
+        - ipBlock:
+            cidr: 192.168.64.128/32
+      ports:
+        - port: 9000
+          protocol: TCP
