@@ -2314,7 +2314,7 @@ spec:
             # The shell image must allow root in order to create directories and copy files to PVCs.
             # cgr.dev/chainguard/busybox as of April 14 2022
             # image shall not contains tag, so it will be supported on a runtime like cri-o
-            "-shell-image", "cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791",
+            "-shell-image", "harbor.lab.local/proxy-cgr/chainguard/busybox@sha256:369de07b03e7a837632f161f04d9e4fab42fd4ab07981802e7ca59af0b607842",
             # for script mode to work with windows we need a powershell image
             # pinning to nanoserver tag as of July 15 2021
             "-shell-image-win", "mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"]
