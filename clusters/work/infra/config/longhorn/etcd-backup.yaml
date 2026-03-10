@@ -33,7 +33,7 @@ metadata:
   namespace: kube-system
 type: Opaque
 stringData:
-  MINIO_ENDPOINT: "http://10.102.153.61:9000"
+  MINIO_ENDPOINT: "http://192.168.197.25:9000"
   MINIO_ACCESS_KEY: "minioadmin"
   MINIO_SECRET_KEY: "WV60H6Mk5xQQeUhTV3BPK6Ok"
   MINIO_BUCKET: "longhorn-backup"
