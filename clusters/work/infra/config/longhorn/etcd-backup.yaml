@@ -114,9 +114,10 @@ spec:
               echo "Upload completed: ${DEST_FILE}"
 
               echo "Keeping last 7 backups, removing older ones..."
-              mc ls "local/${MINIO_BUCKET}/etcd-backups/" | sort | head -n -7 | \
-                awk '{print $NF}' | \
-                xargs -I{} mc rm "local/${MINIO_BUCKET}/etcd-backups/{}" || true
+              mc ls "local/${MINIO_BUCKET}/etcd-backups/" | sort | head -n -7 | while read -r line; do
+                fname=$(echo "$line" | rev | cut -d" " -f1 | rev)
+                [ -n "$fname" ] && mc rm "local/${MINIO_BUCKET}/etcd-backups/${fname}" && echo "Removed: $fname"
+              done || true
 
               echo "Current backups:"
               mc ls "local/${MINIO_BUCKET}/etcd-backups/"
