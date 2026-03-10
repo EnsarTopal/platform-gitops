@@ -74,17 +74,17 @@ spec:
       type: string
     - name: gitops-repo
       type: string
-      default: https://github.com/EnsarTopal/platform-gitops.git
+      default: https://gitea.lab.local/gitea_admin/platform-gitops.git
   steps:
     - name: update-image
       image: alpine/git:2.45.2
       env:
         - name: HOME
           value: /tekton/home
-        - name: GITHUB_TOKEN
+        - name: GITEA_TOKEN
           valueFrom:
             secretKeyRef:
-              name: github-credentials
+              name: gitea-credentials
               key: token
       securityContext:
         runAsUser: 0
@@ -95,7 +95,7 @@ spec:
         git config --global user.email "tekton@lab.local"
         git config --global user.name "Tekton CI"
 
-        REPO_URL=$(echo "$(params.gitops-repo)" | sed "s|https://|https://tekton:${GITHUB_TOKEN}@|")
+        REPO_URL=$(echo "$(params.gitops-repo)" | sed "s|https://|https://gitea_admin:${GITEA_TOKEN}@|")
         rm -rf /workspace/gitops
         git clone "${REPO_URL}" /workspace/gitops
         cd /workspace/gitops
