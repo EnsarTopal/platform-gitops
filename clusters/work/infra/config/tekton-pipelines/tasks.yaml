@@ -85,7 +85,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: gitea-credentials
-              key: token
+              key: password
       securityContext:
         runAsUser: 0
       script: |
