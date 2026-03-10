@@ -1,31 +1,51 @@
 apiVersion: tekton.dev/v1
-kind: Task
+kind: Pipeline
 metadata:
-  name: git-clone
+  name: demo-nginx-pipeline
   namespace: tekton-ci
 spec:
   params:
-    - name: url
+    - name: repo-url
       type: string
     - name: revision
       type: string
       default: main
+    - name: image-tag
+      type: string
   workspaces:
-    - name: output
-  steps:
+    - name: shared-workspace
+  tasks:
     - name: clone
-      image: alpine/git:2.45.2
-      env:
-        - name: HOME
-          value: /tekton/home
-      securityContext:
-        runAsUser: 0
-      script: |
-        #!/bin/sh
-        set -eux
-        mkdir -p /workspace/output
-        rm -rf /workspace/output/source
-        git config --global http.sslVerify false
-        git clone "$(params.url)" /workspace/output/source
-        cd /workspace/output/source
-        git checkout "$(params.revision)"
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+
+    - name: build
+      taskRef:
+        name: kaniko-build
+      runAfter:
+        - clone
+      params:
+        - name: image
+          value: harbor.lab.local/library/nginx-unprivileged
+        - name: tag
+          value: $(params.image-tag)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: update-gitops
+      taskRef:
+        name: update-gitops
+      runAfter:
+        - build
+      params:
+        - name: image-tag
+          value: $(params.image-tag)
