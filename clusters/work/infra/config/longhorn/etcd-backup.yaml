@@ -1,104 +1,22 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: etcd-backup
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: etcd-backup
-rules:
-- apiGroups: [""]
-  resources: ["pods", "pods/exec"]
-  verbs: ["get", "list", "create"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: etcd-backup
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: etcd-backup
-subjects:
-- kind: ServiceAccount
-  name: etcd-backup
-  namespace: kube-system
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: etcd-backup-minio
-  namespace: kube-system
-type: Opaque
-stringData:
-  MINIO_ENDPOINT: "http://192.168.197.25:9000"
-  MINIO_ACCESS_KEY: "minioadmin"
-  MINIO_SECRET_KEY: "WV60H6Mk5xQQeUhTV3BPK6Ok"
-  MINIO_BUCKET: "longhorn-backup"
----
 apiVersion: batch/v1
 kind: CronJob
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: infra-longhorn-config:batch/CronJob:kube-system/etcd-backup
   name: etcd-backup
   namespace: kube-system
 spec:
-  schedule: "0 1 * * *"
   concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
   jobTemplate:
+    metadata:
     spec:
       backoffLimit: 1
       template:
+        metadata:
         spec:
-          serviceAccountName: etcd-backup
-          restartPolicy: OnFailure
-          hostNetwork: true
-          dnsPolicy: ClusterFirstWithHostNet
-          nodeName: k8s-cp1
-          initContainers:
-          - name: etcd-snapshot
-            image: registry.k8s.io/etcd:3.5.17-0
-            imagePullPolicy: IfNotPresent
-            command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
-              SNAPSHOT_FILE="/var/lib/etcd-backup/etcd-snapshot.db"
-              ETCDCTL_API=3 etcdctl \
-                --endpoints=https://127.0.0.1:2379 \
-                --cacert=/etc/kubernetes/pki/etcd/ca.crt \
-                --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
-                --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
-                snapshot save "${SNAPSHOT_FILE}"
-              ETCDCTL_API=3 etcdctl \
-                --write-out=table \
-                snapshot status "${SNAPSHOT_FILE}"
-              echo "Snapshot saved: ${SNAPSHOT_FILE}"
-            volumeMounts:
-            - name: kubernetes-pki
-              mountPath: /etc/kubernetes/pki
-              readOnly: true
-            - name: backup-dir
-              mountPath: /var/lib/etcd-backup
-            resources:
-              requests:
-                cpu: 100m
-                memory: 128Mi
-              limits:
-                cpu: 200m
-                memory: 256Mi
-            securityContext:
-              allowPrivilegeEscalation: false
-              runAsNonRoot: false
           containers:
-          - name: minio-upload
-            image: harbor.lab.local/proxy-dockerhub/minio/mc:latest
-            imagePullPolicy: IfNotPresent
-            command:
+          - command:
             - /bin/sh
             - -c
             - |
@@ -124,25 +42,83 @@ spec:
             envFrom:
             - secretRef:
                 name: etcd-backup-minio
-            volumeMounts:
-            - name: backup-dir
-              mountPath: /var/lib/etcd-backup
+            image: harbor.lab.local/proxy-dockerhub/minio/mc:latest
+            imagePullPolicy: IfNotPresent
+            name: minio-upload
             resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
               requests:
                 cpu: 50m
                 memory: 64Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsNonRoot: false
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+            - mountPath: /var/lib/etcd-backup
+              name: backup-dir
+          dnsPolicy: ClusterFirstWithHostNet
+          hostNetwork: true
+          initContainers:
+          - command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              SNAPSHOT_FILE="/var/lib/etcd-backup/etcd-snapshot.db"
+              ETCDCTL_API=3 etcdctl \
+                --endpoints=https://127.0.0.1:2379 \
+                --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                --cert=/etc/kubernetes/pki/apiserver-etcd-client.crt \
+                --key=/etc/kubernetes/pki/apiserver-etcd-client.key \
+                snapshot save "${SNAPSHOT_FILE}"
+              ETCDCTL_API=3 etcdctl \
+                --write-out=table \
+                snapshot status "${SNAPSHOT_FILE}"
+              echo "Snapshot saved: ${SNAPSHOT_FILE}"
+            image: registry.k8s.io/etcd:3.5.17-0
+            imagePullPolicy: IfNotPresent
+            name: etcd-snapshot
+            resources:
               limits:
+                cpu: 200m
+                memory: 256Mi
+              requests:
                 cpu: 100m
                 memory: 128Mi
             securityContext:
               allowPrivilegeEscalation: false
               runAsNonRoot: false
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+            - mountPath: /etc/kubernetes/pki
+              name: kubernetes-pki
+              readOnly: true
+            - mountPath: /var/lib/etcd-backup
+              name: backup-dir
+          nodeName: k8s-cp1
+          restartPolicy: OnFailure
+          schedulerName: default-scheduler
+          securityContext: {}
+          serviceAccount: etcd-backup
+          serviceAccountName: etcd-backup
+          terminationGracePeriodSeconds: 30
           volumes:
-          - name: kubernetes-pki
-            hostPath:
+          - hostPath:
               path: /etc/kubernetes/pki
               type: Directory
-          - name: backup-dir
-            hostPath:
+            name: kubernetes-pki
+          - hostPath:
               path: /var/lib/etcd-backup
               type: DirectoryOrCreate
+            name: backup-dir
+  schedule: 0 1 * * *
+  successfulJobsHistoryLimit: 3
+  suspend: false
+status:
+  lastScheduleTime: "2026-03-10T01:00:00Z"
+  lastSuccessfulTime: "2026-03-10T19:37:53Z"
