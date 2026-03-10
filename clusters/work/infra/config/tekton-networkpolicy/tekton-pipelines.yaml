@@ -100,3 +100,24 @@ spec:
           port: 8443
         - protocol: TCP
           port: 443
+---
+# Controller image digest resolve için harbor/gitea → ingress-nginx üzerinden
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tekton-pipelines-allow-ingress-nginx-egress
+  namespace: tekton-pipelines
+spec:
+  podSelector: {}
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+  policyTypes:
+    - Egress
