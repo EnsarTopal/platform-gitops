@@ -122,6 +122,34 @@ spec:
                 annotations:
                   summary: "Deployment failed: {{ $labels.deployment }}"
                   description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"
+          tls-rules:
+            groups:
+            - name: tls.rules
+              rules:
+              - alert: CertificateExpiringSoon
+                expr: (certmanager_certificate_expiration_timestamp_seconds - time()) / 86400 < 14
+                for: 1h
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "TLS certificate expiring soon: {{ $labels.name }}"
+                  description: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+              - alert: CertificateExpiryCritical
+                expr: (certmanager_certificate_expiration_timestamp_seconds - time()) / 86400 < 7
+                for: 1h
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "TLS certificate expiry critical: {{ $labels.name }}"
+                  description: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+              - alert: CertificateNotReady
+                expr: certmanager_certificate_ready_status{condition="False"} == 1
+                for: 10m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "TLS certificate not ready: {{ $labels.name }}"
+                  description: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not ready (condition=False)"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
