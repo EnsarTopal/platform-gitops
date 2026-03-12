@@ -125,4 +125,10 @@ spec:
   suspend: false
 status:
   lastScheduleTime: "2026-03-12T01:00:00Z"
-  lastSuccessfulTime: "2026-03-10T19:37:53Z"
+  lastSuccessfulTime: "2026-03-12T11:56:28Z"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: etcd-backup
+  namespace: kube-system
