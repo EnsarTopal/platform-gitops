@@ -28,7 +28,7 @@ spec:
         init:
           image:
             registry: harbor.lab.local
-            repository: proxy-dockerhub/busybox
+            repository: proxy-dockerhub/library/busybox
             tag: 1.37.0
 
         superuser:
@@ -64,7 +64,7 @@ spec:
           enabled: true
           image:
             registry: harbor.lab.local
-            repository: proxy-dockerhub/bitnami/postgresql
+            repository: library/postgresql
             tag: 18.3.0
           auth:
             username: netbox
@@ -75,7 +75,7 @@ spec:
           enabled: true
           image:
             registry: harbor.lab.local
-            repository: proxy-dockerhub/bitnami/valkey
+            repository: bitnamilegacy/valkey
             tag: 9.0.3
 
         housekeeping:
