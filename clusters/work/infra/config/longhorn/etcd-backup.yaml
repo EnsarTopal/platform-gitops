@@ -10,10 +10,12 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     metadata:
+      creationTimestamp: null
     spec:
       backoffLimit: 1
       template:
         metadata:
+          creationTimestamp: null
         spec:
           containers:
           - command:
@@ -42,7 +44,7 @@ spec:
             envFrom:
             - secretRef:
                 name: etcd-backup-minio
-            image: harbor.lab.local/proxy-dockerhub/minio/mc:latest
+            image: harbor.lab.local/proxy-dockerhub/minio/mc:RELEASE.2024-01-13T08-44-48Z
             imagePullPolicy: IfNotPresent
             name: minio-upload
             resources:
@@ -101,6 +103,8 @@ spec:
             - mountPath: /var/lib/etcd-backup
               name: backup-dir
           nodeName: k8s-cp1
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: ""
           restartPolicy: OnFailure
           schedulerName: default-scheduler
           securityContext: {}
@@ -120,5 +124,5 @@ spec:
   successfulJobsHistoryLimit: 3
   suspend: false
 status:
-  lastScheduleTime: "2026-03-10T01:00:00Z"
+  lastScheduleTime: "2026-03-12T01:00:00Z"
   lastSuccessfulTime: "2026-03-10T19:37:53Z"
