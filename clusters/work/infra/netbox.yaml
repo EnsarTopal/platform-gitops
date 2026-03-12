@@ -18,6 +18,17 @@ spec:
         global:
           storageClass: longhorn
 
+        image:
+          registry: harbor.lab.local
+          repository: proxy-dockerhub/netboxcommunity/netbox
+          tag: v4.5.4
+
+        init:
+          image:
+            registry: harbor.lab.local
+            repository: proxy-dockerhub/busybox
+            tag: 1.37.0
+
         superuser:
           name: admin
           email: admin@example.local
@@ -39,12 +50,54 @@ spec:
           enabled: true
           size: 5Gi
 
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1024Mi
+          limits:
+            cpu: 750m
+            memory: 1536Mi
+
         postgresql:
           enabled: true
+          image:
+            registry: harbor.lab.local
+            repository: proxy-dockerhub/bitnami/postgresql
+            tag: 18.3.0
           auth:
             username: netbox
             password: "netboxdbpass"
             database: netbox
+
+        valkey:
+          enabled: true
+          image:
+            registry: harbor.lab.local
+            repository: proxy-dockerhub/bitnami/valkey
+            tag: 9.0.3
+
+        housekeeping:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 150m
+              memory: 192Mi
+
+        worker:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 150m
+              memory: 192Mi
+          waitForBackend:
+            image:
+              registry: harbor.lab.local
+              repository: proxy-dockerhub/rancher/kubectl
+              tag: v1.35.2
 
         redis:
           enabled: true
