@@ -17,6 +17,8 @@ spec:
       values: |-
         global:
           storageClass: longhorn
+          security:
+            allowInsecureImages: true
 
         image:
           registry: harbor.lab.local
