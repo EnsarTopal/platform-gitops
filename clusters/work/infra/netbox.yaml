@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-netbox
+  namespace: argocd
+spec:
+  project: platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netbox
+  source:
+    chart: netbox
+    repoURL: https://netbox-community.github.io/netbox-chart/
+    targetRevision: 8.0.11
+    helm:
+      releaseName: netbox
+      values: |-
+        global:
+          storageClass: longhorn
+
+        superuser:
+          name: admin
+          email: admin@example.local
+          password: "Netbox123!"
+          apiToken: "NetboxToken123456789"
+
+        allowedHosts:
+          - "*"
+
+        replicaCount: 1
+
+        service:
+          type: ClusterIP
+
+        ingress:
+          enabled: false
+
+        persistence:
+          enabled: true
+          size: 5Gi
+
+        postgresql:
+          enabled: true
+          auth:
+            username: netbox
+            password: "netboxdbpass"
+            database: netbox
+
+        redis:
+          enabled: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
