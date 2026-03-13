@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: infra-netbox-config
+  namespace: argocd
+spec:
+  project: platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: netbox
+  source:
+    repoURL: https://github.com/EnsarTopal/platform-gitops.git
+    targetRevision: HEAD
+    path: clusters/work/infra/config/netbox
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

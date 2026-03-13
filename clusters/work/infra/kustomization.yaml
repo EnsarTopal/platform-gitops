@@ -24,3 +24,4 @@ resources:
   - minio.yaml
   - longhorn-config.yaml
   - netbox.yaml
+  - netbox-config.yaml
