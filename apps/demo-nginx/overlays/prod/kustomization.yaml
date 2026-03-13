@@ -47,3 +47,4 @@ patches:
       - op: replace
         path: /spec/template/spec/volumes/0/configMap/name
         value: nginx-html-prod
+components: []
