@@ -46,9 +46,6 @@ spec:
         persistence:
           enabled: true
           size: 5Gi
-        extraConfig:
-          - raw: |
-              API_TOKEN_PEPPERS = {0: "ddf9fe00ad09a0049897e753fe4f75200d305d0d54f04242fddea5c42b2ea62f"}
         resources:
           requests:
             cpu: 500m
@@ -100,6 +97,13 @@ spec:
               registry: harbor.lab.local
               repository: proxy-dockerhub/rancher/kubectl
               tag: v1.35.2
+  ignoreDifferences:
+    - group: ""
+      kind: ConfigMap
+      name: netbox
+      namespace: netbox
+      jsonPointers:
+        - /data/configuration.py
   syncPolicy:
     automated:
       prune: true
