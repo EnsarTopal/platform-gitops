@@ -49,7 +49,7 @@ spec:
         extraConfig:
           - values:
               API_TOKEN_PEPPERS:
-                "0": "ddf9fe00ad09a0049897e753fe4f75200d305d0d54f04242fddea5c42b2ea62f"
+                0: ddf9fe00ad09a0049897e753fe4f75200d305d0d54f04242fddea5c42b2ea62f"
         resources:
           requests:
             cpu: 500m
