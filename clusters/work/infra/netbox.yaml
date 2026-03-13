@@ -14,7 +14,7 @@ spec:
     targetRevision: 8.0.11
     helm:
       releaseName: netbox
-      values: |-
+      values: |
         global:
           storageClass: longhorn
           security:
@@ -38,7 +38,7 @@ spec:
           apiToken: "NetboxToken123456789"
 
         allowedHosts:
-          - "*"
+          - "netbox.lab.local"
 
         replicaCount: 1
 
@@ -49,7 +49,13 @@ spec:
           type: ClusterIP
 
         ingress:
-          enabled: false
+          enabled: true
+          className: nginx
+          hosts:
+            - host: netbox.lab.local
+              paths:
+                - path: /
+                  pathType: Prefix
 
         persistence:
           enabled: true
