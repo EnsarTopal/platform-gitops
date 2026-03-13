@@ -34,18 +34,22 @@ spec:
           password: "Netbox123!"
           apiToken: "NetboxToken123456789"
         allowedHosts:
+          - "netbox.lab.local"
           - "*"
         replicaCount: 1
+        nodeSelector:
+          kubernetes.io/hostname: k8s-w1
         service:
           type: ClusterIP
         ingress:
           enabled: true
           className: nginx
+          pathType: Prefix
           hosts:
             - host: netbox.lab.local
               paths:
-                - path: /
-                  pathType: Prefix
+                - /
+          tls: []
         persistence:
           enabled: true
           size: 5Gi
@@ -81,6 +85,7 @@ spec:
         redis:
           enabled: false
         housekeeping:
+          enabled: true
           resources:
             requests:
               cpu: 100m
@@ -89,6 +94,8 @@ spec:
               cpu: 200m
               memory: 256Mi
         worker:
+          nodeSelector:
+            kubernetes.io/hostname: k8s-w1
           resources:
             requests:
               cpu: 200m
