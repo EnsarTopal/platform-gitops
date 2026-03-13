@@ -42,14 +42,7 @@ spec:
         service:
           type: ClusterIP
         ingress:
-          enabled: true
-          className: nginx
-          pathType: Prefix
-          hosts:
-            - host: netbox.lab.local
-              paths:
-                - /
-          tls: []
+          enabled: false
         persistence:
           enabled: true
           size: 5Gi
